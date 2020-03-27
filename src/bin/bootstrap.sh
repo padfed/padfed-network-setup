@@ -53,32 +53,6 @@ dockerThirdPartyImagesPull() {
     done
 }
 
-#dockerCaPull() {
-#    local CA_TAG=$1
-#    echo "==> FABRIC CA IMAGE"
-#    echo
-#    docker pull "hyperledger/fabric-ca:$CA_TAG"
-#    docker tag "hyperledger/fabric-ca:$CA_TAG" "hyperledger/fabric-ca"
-#}
-
-#samplesInstall() {
-#    # clone (if needed) hyperledger/fabric-samples and checkout corresponding
-#    # version to the binaries and docker images to be downloaded
-#    if [ -d first-network ]; then
-#        # if we are in the fabric-samples repo, checkout corresponding version
-#        echo "===> Checking out v${VERSION} of hyperledger/fabric-samples"
-#        git checkout v${VERSION}
-#    elif [ -d fabric-samples ]; then
-#        # if fabric-samples repo already cloned and in current directory,
-#        # cd fabric-samples and checkout corresponding version
-#        echo "===> Checking out v${VERSION} of hyperledger/fabric-samples"
-#        cd fabric-samples && git checkout v${VERSION}
-#    else
-#        echo "===> Cloning hyperledger/fabric-samples repo and checkout v${VERSION}"
-#        git clone -b master https://github.com/hyperledger/fabric-samples.git && cd fabric-samples && git checkout v${VERSION}
-#    fi
-#}
-
 # Incrementally downloads the .tar.gz file locally first, only decompressing it
 # after the download is complete. This is slower than binaryDownload() but
 # allows the download to be resumed.
@@ -199,7 +173,7 @@ fi
 BINARY_FILE=hyperledger-fabric-${ARCH}-${VERSION}.tar.gz
 
 # then parse opts
-while getopts "h?dsb" opt; do
+while getopts "h?db" opt; do
     case "$opt" in
         h|\?)
             printHelp
@@ -207,19 +181,11 @@ while getopts "h?dsb" opt; do
             ;;
         d)  DOCKER=false
             ;;
-        s)  SAMPLES=false
-            ;;
         b)  BINARIES=false
             ;;
     esac
 done
 
-#if [ "$SAMPLES" == "true" ]; then
-#    echo
-#    echo "Installing hyperledger/fabric-samples repo"
-#    echo
-#    samplesInstall
-#fi
 if [ "$BINARIES" == "true" ]; then
     echo
     echo "Installing Hyperledger Fabric binaries"
