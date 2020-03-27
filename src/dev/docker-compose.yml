@@ -26,7 +26,6 @@ services:
       - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
       - ORDERER_GENERAL_TLS_CLIENTAUTHREQUIRED=${TLS_CLIENT_AUTH_REQUIRED?TLS_CLIENT_AUTH_REQUIRED key no encontrada/no definida/.env no localizado}
       - ORDERER_GENERAL_TLS_CLIENTROOTCAS
-
       #MONITORING
       - ORDERER_METRICS_PROVIDER=prometheus
       - ORDERER_OPERATIONS_LISTENADDRESS=:8443
@@ -204,7 +203,7 @@ services:
         peer0.comarb.tribfed.gob.ar,peer1.comarb.tribfed.gob.ar
       - GOPATH=/opt/gopath
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
-#      - CORE_LOGGING_GRPC=DEBUG
+      # - CORE_LOGGING_GRPC=DEBUG
       - FABRIC_LOGGING_SPEC=${LOG_LEVEL:?LOG_LEVEL key no encontrada/no definida/.env no localizado}
       - CORE_PEER_ID=cli
       - CORE_PEER_ADDRESS=peer0.afip.tribfed.gob.ar:7051
@@ -320,12 +319,11 @@ services:
         peer0.arba.tribfed.gob.ar,peer1.arba.tribfed.gob.ar,
         peer0.comarb.tribfed.gob.ar,peer1.comarb.tribfed.gob.ar
         # LOGGING LEVELS
-#      - CORE_CHAINCODE_LOGGING_SHIM=DEBUG
-#      - CORE_CHAINCODE_LOGGING_LEVEL=DEBUG
-#      - CORE_LOGGING_GRPC=DEBUG
+        # - CORE_CHAINCODE_LOGGING_SHIM=DEBUG
+        # - CORE_CHAINCODE_LOGGING_LEVEL=DEBUG
+        # - CORE_LOGGING_GRPC=DEBUG
       - FABRIC_LOGGING_SPEC=${LOG_LEVEL:?LOG_LEVEL key no encontrada/no definida/.env no localizado}
-#      - NPM_CONFIG_LOGLEVEL=DEBUG
-      #
+        # - NPM_CONFIG_LOGLEVEL=DEBUG
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
       - CORE_PEER_ID=peer0.comarb.tribfed.gob.ar
       - CORE_PEER_ADDRESS=peer0.comarb.tribfed.gob.ar:7051
@@ -333,7 +331,6 @@ services:
       - CORE_VM_DOCKER_ATTACHSTDOUT=true
       - CORE_PEER_LOCALMSPID=COMARB
       - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/peer/msp
-
       # TLS
       - CORE_PEER_TLS_ENABLED=${TLS_ENABLED:?TLS_ENABLED key no encontrada --> .env no localizado}
       - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/peer/tls/server.crt
@@ -343,11 +340,9 @@ services:
       - CORE_PEER_TLS_CLIENTCERT_FILE=/etc/hyperledger/peer/tls/server.crt
       - CORE_PEER_TLS_CLIENTKEY_FILE=/etc/hyperledger/peer/tls/server.key
       - CORE_PEER_TLS_CLIENTROOTCAS_FILES=/etc/hyperledger/peer/tls/ca.crt
-
       # GOSSIP
       - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.comarb.tribfed.gob.ar:7051
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.comarb.tribfed.gob.ar:7051
-
       # LEDGER
       - CORE_LEDGER_STATE_TOTALQUERYLIMIT=100000
 
@@ -393,17 +388,15 @@ services:
        - CORE_VM_DOCKER_ATTACHSTDOUT=true
        - CORE_PEER_LOCALMSPID=COMARB
        - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/peer/msp
-#       # TLS
+       # TLS
        - CORE_PEER_TLS_ENABLED=${TLS_ENABLED:?TLS_ENABLED key no encontrada --> .env no localizado}
        - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/peer/tls/server.crt
        - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/peer/tls/server.key
        - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/peer/tls/ca.crt
-
        - CORE_PEER_TLS_CLIENTAUTHREQUIRED=${TLS_CLIENT_AUTH_REQUIRED?TLS_CLIENT_AUTH_REQUIRED key no encontrada/no definida/.env no localizado}
        - CORE_PEER_TLS_CLIENTCERT_FILE=/etc/hyperledger/peer/tls/server.crt
        - CORE_PEER_TLS_CLIENTKEY_FILE=/etc/hyperledger/peer/tls/server.key
        - CORE_PEER_TLS_CLIENTROOTCAS_FILES=/etc/hyperledger/peer/tls/ca.crt
-
       # LEDGER
        - CORE_LEDGER_STATE_TOTALQUERYLIMIT=100000
 
@@ -521,11 +514,11 @@ services:
         peer0.afip.tribfed.gob.ar,peer1.afip.tribfed.gob.ar,
         peer0.arba.tribfed.gob.ar,peer1.arba.tribfed.gob.ar,
         peer0.comarb.tribfed.gob.ar,peer1.comarb.tribfed.gob.ar
-#      - CORE_CHAINCODE_LOGGING_SHIM=DEBUG
-#      - CORE_CHAINCODE_LOGGING_LEVEL=DEBUG
-#      - CORE_LOGGING_GRPC=DEBUG
+      # - CORE_CHAINCODE_LOGGING_SHIM=DEBUG
+      # - CORE_CHAINCODE_LOGGING_LEVEL=DEBUG
+      # - CORE_LOGGING_GRPC=DEBUG
       - FABRIC_LOGGING_SPEC=${LOG_LEVEL:?LOG_LEVEL key no encontrada/no definida/.env no localizado}
-#      - NPM_CONFIG_LOGLEVEL=DEBUG
+      # - NPM_CONFIG_LOGLEVEL=DEBUG
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
       - CORE_PEER_ID=peer0.arba.tribfed.gob.ar
       - CORE_PEER_ADDRESS=peer0.arba.tribfed.gob.ar:7051
@@ -533,22 +526,18 @@ services:
       - CORE_VM_DOCKER_ATTACHSTDOUT=true
       - CORE_PEER_LOCALMSPID=ARBA
       - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/peer/msp
-
       # TLS
       - CORE_PEER_TLS_ENABLED=${TLS_ENABLED:?TLS_ENABLED key no encontrada --> .env no localizado}
       - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/peer/tls/server.crt
       - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/peer/tls/server.key
       - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/peer/tls/ca.crt
-
       - CORE_PEER_TLS_CLIENTAUTHREQUIRED=${TLS_CLIENT_AUTH_REQUIRED?TLS_CLIENT_AUTH_REQUIRED key no encontrada/no definida/.env no localizado}
       - CORE_PEER_TLS_CLIENTCERT_FILE=/etc/hyperledger/peer/tls/server.crt
       - CORE_PEER_TLS_CLIENTKEY_FILE=/etc/hyperledger/peer/tls/server.key
       - CORE_PEER_TLS_CLIENTROOTCAS_FILES=/etc/hyperledger/peer/tls/ca.crt
-
       # GOSSIP
       - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.arba.tribfed.gob.ar:7051
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.arba.tribfed.gob.ar:7051
-
       # LEDGER
       - CORE_LEDGER_STATE_TOTALQUERYLIMIT=100000
 
@@ -622,7 +611,7 @@ services:
       options:
         max-size: "100m"
         max-file: "10"
-        
+
   peer0_arba_cli:
     mem_limit: 1g
     container_name: peer0_arba_cli
@@ -663,7 +652,7 @@ services:
     depends_on:
       - ${ORDERER_NAME}
       - peer0.arba.tribfed.gob.ar
-#
+
   peer1_arba_cli:
     mem_limit: 1g
     container_name: peer1_arba_cli
