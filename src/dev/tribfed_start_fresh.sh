@@ -31,6 +31,8 @@ docker-compose down --volumes --remove-orphans
 ./tribfed_delete_cc_images.sh
 
 sudo rm -rf "$FABRIC_INSTANCE_PATH"
+sudo mkdir -p "$CHAINCODE_DIR"
+sudo chmod -R 777 "$CHAINCODE_DIR"
 
 echo_sep "Generando material criptografico, orderer block, primera tx del channel y txs para anchors ..."
 ./tribfed_setup.sh
