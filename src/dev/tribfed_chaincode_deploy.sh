@@ -5,65 +5,84 @@ set -Eeuo pipefail
 BASE=$(dirname $(readlink -f $0))
 [[ ! -v ENVIRONMENT ]] && source $BASE/.env
 
-docker() {
-   [[ -v DOCKERDEBUG ]] && echo docker "$@"
-   command docker "$@"
-}
+. "$BASE/../common/lib.sh"
 
-red_echo()   { echo -e "\033[1;31m$@\033[0m"; }
+echo_running
 
-green_echo() { echo -e "\033[1;32m$@\033[0m"; }
-
-if [[ "$#" -eq 1 ]]; then
-   ARG1_VERSION="$1" # opcionalmente recibe una version
+if [[ $# -eq 1 ]]; then
+   readonly ARG1_VERSION="$1" # opcionalmente recibe una version
 fi
 
-if [[ ! -f "$CHAINCODE_DIR/main.go" ]]
-then
-    red_echo "Los fuentes del chaincode deben estar en $CHAINCODE_DIR (o modificar \$CHAINCODE_DIR)"
-    exit 1
+echo "CHAINCODE_DIR [$(realpath "$CHAINCODE_DIR")]"
+
+if [[ ! -d $CHAINCODE_DIR ]]; then
+   echo_red "CHAINCODE_DIR [$(realpath "$CHAINCODE_DIR")] doesn't exist"
+   exit 1
 fi
 
-if [[ "$TLS_ENABLED" == "true" ]]; then
-    PEER_CLI_TLS_WITH_ORDERER="--tls --cafile /etc/hyperledger/orderer/tls/tlsca.afip.tribfed.gob.ar-cert.pem"
+if [[ ! -r $CHAINCODE_DIR/main.go ]]; then
+   if [[ ! -v CHAINCODE_ARTIFACT ]]; then
+      echo_red "main.go not found in CHAINCODE_DIR [$CHAINCODE_DIR] and CHAINCODE_ARTIFACT not especificated"
+      exit 1
+   fi
+   if [[ ! -r $CHAINCODE_ARTIFACT ]]; then
+      echo_red "CHAINCODE_ARTIFACT [$CHAINCODE_ARTIFACT] doesn't exist"
+      exit 1
+   fi
+   tar -C "$CHAINCODE_DIR" -xaf "$CHAINCODE_ARTIFACT"
+   if [[ ! -r $CHAINCODE_DIR/main.go ]]; then
+       echo_red "CHAINCODE_ARTIFACT [$CHAINCODE_ARTIFACT] doesn't contain main.go"
+       exit 1
+   fi
+   echo "main.go extracted from [$(realpath "$CHAINCODE_ARTIFACT")]"
+else
+   echo "main.go in [$(realpath "$CHAINCODE_DIR")]"
+fi
 
-    if [[ "$TLS_CLIENT_AUTH_REQUIRED" == "true" ]]; then
-       PEER_CLI_TLS_WITH_ORDERER="$PEER_CLI_TLS_WITH_ORDERER --clientauth --keyfile /etc/hyperledger/tls/client.key --certfile /etc/hyperledger/tls/client.crt"
+TLS_PARAMETERS=""
+if [[ $TLS_ENABLED == true ]]; then
+    TLS_PARAMETERS="--tls --cafile /etc/hyperledger/orderer/tls/tlsca.afip.tribfed.gob.ar-cert.pem"
+
+    if [[ $TLS_CLIENT_AUTH_REQUIRED == true ]]; then
+       TLS_PARAMETERS="$TLS_PARAMETERS --clientauth"
+       TLS_PARAMETERS="$TLS_PARAMETERS --keyfile /etc/hyperledger/tls/client.key"
+       TLS_PARAMETERS="$TLS_PARAMETERS --certfile /etc/hyperledger/tls/client.crt"
     fi
 fi
 
-echo '####################################################'
-echo docker exec peer0_afip_cli peer chaincode list
-docker exec peer0_afip_cli peer chaincode list -C $CHANNEL_NAME --instantiated
+echo_sep "determining chaincode version ..."
+docker exec peer0_afip_cli peer chaincode list -C "$CHANNEL_NAME" --instantiated
 
-CC_VERSION="$(docker exec peer0_afip_cli peer chaincode list -C $CHANNEL_NAME --instantiated | sed -En '/Name: padfed/{s/.*Version: ([^,]+),.*/\1/;p}')"
-echo '####################################################'
-echo "version detectada --> $CC_VERSION"
+readonly CC_VERSION="$(docker exec peer0_afip_cli peer chaincode list -C "$CHANNEL_NAME" --instantiated | sed -En '/Name: padfed/{s/.*Version: ([^,]+),.*/\1/;p}')"
+echo "already instantiated version [${CC_VERSION:-anyone}]"
 
-if [ -z "$CC_VERSION" ]
+if [[ -z $CC_VERSION ]]
 then
-   CC_NEW_VERSION=${ARG1_VERSION:=1}
-   CC_COMMAND="instantiate"
+   readonly NEW_VERSION=${ARG1_VERSION:-1}
+   readonly COMMAND="instantiate"
 else
-   echo "deploy detectado con version $CC_VERSION"
-   CC_NEW_VERSION=${ARG1_VERSION:=$(expr $CC_VERSION + 1)}
-   CC_COMMAND="upgrade"
+   if [[ -v ARG1_VERSION ]]; then
+      readonly NEW_VERSION="$ARG1_VERSION"
+   elif [[ $CC_VERSION == *[[:digit:]]* ]]; then
+      readonly NEW_VERSION="$(("$CC_VERSION" + 1))"
+   else
+      readonly NEW_VERSION="${CC_VERSION}.x"
+   fi
+   readonly COMMAND="upgrade"
 fi
 
-echo "$CC_COMMAND deploy con version $CC_NEW_VERSION"
-echo "fuentes a empaquetar en $CHAINCODE_DIR"
+echo_sep "deploying $CHAINCODE_NAME version $NEW_VERSION ..."
 
 for ORG in ${ORGS_WITH_PEERS}; do
-   docker exec peer0_${ORG,,}_cli peer chaincode install $PEER_CLI_TLS_WITH_ORDERER -n $CHAINCODE_NAME -v $CC_NEW_VERSION -p $CHAINCODE_PACKAGE
+   docker exec "peer0_${ORG,,}_cli" peer chaincode install $TLS_PARAMETERS -n "$CHAINCODE_NAME" -v "$NEW_VERSION" -p "$CHAINCODE_PACKAGE"
 done
 
-echo "#################################################### (CHAINCODE ${CC_COMMAND})"
-docker exec peer0_afip_cli peer chaincode ${CC_COMMAND} $PEER_CLI_TLS_WITH_ORDERER -o $ORDERER -C $CHANNEL_NAME -n $CHAINCODE_NAME -v $CC_NEW_VERSION -c '{"Args":[""]}' -P $ENDORSEMENT_POLICY
+echo_sep "activating $CHAINCODE_NAME version $NEW_VERSION command $COMMAND ..."
+docker exec peer0_afip_cli peer chaincode "$COMMAND" $TLS_PARAMETERS -o "$ORDERER" -C "$CHANNEL_NAME" -n "$CHAINCODE_NAME" -v "$NEW_VERSION" -c '{"Args":[""]}' -P "$ENDORSEMENT_POLICY"
 
-while !(docker exec peer0_afip_cli peer chaincode list --instantiated -C $CHANNEL_NAME | sed -E "/Name: $CHAINCODE_NAME,/s/.* Version: ([^,]+),.*/\1/" | grep -q $CC_NEW_VERSION); do
-   echo 'Esperando que el chaincode esté instanciado...'
+while !(docker exec peer0_afip_cli peer chaincode list --instantiated -C "$CHANNEL_NAME" | sed -E "/Name: $CHAINCODE_NAME,/s/.* Version: ([^,]+),.*/\1/" | grep -q "$NEW_VERSION"); do
+   echo 'waiting for chaincode instantiation ...'
    sleep 1
 done
 
-echo "########################################"
-green_echo "Chaincode $CHAINCODE_NAME $CC_NEW_VERSION instanciado!"
+echo_success "Chaincode $CHAINCODE_NAME $NEW_VERSION deployed"

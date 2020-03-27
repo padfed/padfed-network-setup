@@ -225,8 +225,8 @@ services:
       - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/afip.tribfed.gob.ar/users/Admin@afip.tribfed.gob.ar/tls:/etc/hyperledger/tls
       - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/afip.tribfed.gob.ar/peers/peer0.afip.tribfed.gob.ar/tls:/etc/hyperledger/peer/tls
       - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/afip.tribfed.gob.ar/tlsca:/etc/hyperledger/orderer/tls
-      - ${CHAINCODE_DIR:?CHAINCODE_DIR no encontrada}:/opt/gopath/src/$CHAINCODE_PACKAGE
-      - $JAVA_CHAINCODE_DIR:/opt/gopath/src/java
+      - ${CHAINCODE_DIR:?CHAINCODE_DIR no encontrada}:/opt/gopath/src/${CHAINCODE_PACKAGE:?CHAINCODE_PACKAGE no encontrada}
+      - ${JAVA_CHAINCODE_DIR:-/home}:/opt/gopath/src/java
       - ${FABRIC_INSTANCE_PATH}/peer0_afip_cli/signing:/signing
       # TLS ROOT CAs so than it can invoke chaincode over peers of other orgs
       - ${FABRIC_INSTANCE_PATH}/peer0_afip_cli/tls_root_cas:/etc/hyperledger/tls_root_cas
