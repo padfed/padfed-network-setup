@@ -15,13 +15,13 @@ readonly VERSION="$1"
 
 pushd "$BASE/.."
 
-"$BASE/bootstrap.sh" "$VERSION" -d -s
+"$BASE/bootstrap.sh" "$VERSION" -d
 
 # bootstrap.sh -d -s ademas de los binarios descomprime un directorio config conteniendo 3 yamls
 # procedemos a elimnarlos
 
 for y in configtx core orderer; do
-    rm -f "$PWD/config/$y.yaml" 
+    rm -f "$PWD/config/$y.yaml"
 done
 
 if [[ -d $PWD/config ]]; then
@@ -32,4 +32,4 @@ for b in peer orderer idemixgen; do
     rm -f "$BASE/$b"
 done
 
-popd 
+popd

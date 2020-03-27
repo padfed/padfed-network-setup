@@ -101,20 +101,21 @@ binaryDownload() {
         echo "==> Partial binary file found. Resuming download..."
         binaryIncrementalDownload "${BINARY_FILE}" "${URL}"
     else
-        curl "${URL}" | tar vxz || rc=$?
+        curl -L "${URL}" | tar vxz || rc=$?
         if [ -n "$rc" ]; then
             echo "==> There was an error downloading the binary file. Switching to incremental download."
             echo "==> Downloading file..."
             binaryIncrementalDownload "${BINARY_FILE}" "${URL}"
         else
-            echo "==> Binary download done."
+            echo "==> Binary ${BINARY_FILE} download done."
         fi
     fi
 }
 
 binariesInstall() {
     echo "===> Downloading version ${FABRIC_TAG} platform specific fabric binaries"
-    binaryDownload "${BINARY_FILE}" "https://nexus.hyperledger.org/content/repositories/releases/org/hyperledger/fabric/hyperledger-fabric/${ARCH}-${VERSION}/${BINARY_FILE}"
+    # binaryDownload "${BINARY_FILE}" "https://nexus.hyperledger.org/content/repositories/releases/org/hyperledger/fabric/hyperledger-fabric/${ARCH}-${VERSION}/${BINARY_FILE}"
+    binaryDownload   "${BINARY_FILE}" "https://github.com/hyperledger/fabric/releases/download/v${VERSION}/${BINARY_FILE}"
     if [ $? -eq 22 ]; then
         echo
         echo "------> ${FABRIC_TAG} platform specific fabric binary is not available to download <----"
