@@ -41,6 +41,8 @@ echo '##########################################################################
 echo Creando el channel y joineando peers ...
 ./tribfed_start.sh
 
+./tribfed_channel_create.sh
+
 echo '##########################################################################'
 echo Deployando chaincode ...
 ./tribfed_chaincode_deploy.sh
@@ -50,7 +52,7 @@ if [[ ${ADD_NEW_ORG:="no"} == "no" ]]; then
    green_echo "END 2 END: START FRESH ... OK !!!"
    echo '##########################################################################'
    exit
-fi 
+fi
 
 # Puede setearse en el .env
 NEWORG=${NEWORG:="CBA"}
