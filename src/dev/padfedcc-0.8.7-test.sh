@@ -5,7 +5,7 @@ set -Eeuo pipefail
 BASE=$(dirname $(readlink -f $0))
 
 source $BASE/.env
-source $BASE/lib.sh
+source $BASE/lib-cctest.sh
 source $BASE/test-data.sh
 
 usage() {
