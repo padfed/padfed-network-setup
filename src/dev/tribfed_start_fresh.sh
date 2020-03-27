@@ -8,6 +8,8 @@ readonly BASE="$(dirname "$(readlink -f "$0")")"
 source "$BASE/.env"
 . "$BASE/../common/lib.sh"
 
+echo_running
+
 usage() {
   echo "Usage: $0 p1"
   echo "p1: single or add-org"
