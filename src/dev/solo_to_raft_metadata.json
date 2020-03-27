@@ -1,0 +1,17 @@
+              "metadata": {
+                "consenters": [
+                  {
+                    "client_tls_cert": "PEM",
+                    "host": "orderer.afip.tribfed.gob.ar",
+                    "port": 7050,
+                    "server_tls_cert": "PEM"
+                  }
+                ],
+                "options": {
+                  "election_tick": 10,
+                  "heartbeat_tick": 1,
+                  "max_inflight_blocks": 5,
+                  "snapshot_interval_size": 20971520,
+                  "tick_interval": "500ms"
+                }
+              }

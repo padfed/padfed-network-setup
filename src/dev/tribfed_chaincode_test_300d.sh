@@ -1,0 +1,626 @@
+#!/bin/bash
+[[ -n $DEBUG ]] && set -x
+set -Eeuo pipefail
+
+die() {
+    red_echo "$@"
+    exit 1
+}
+
+cc() {
+    local OP=$1
+    shift
+    local ARGS='{"Args":[]}'
+    ARGS=$(jq <<<$ARGS -c ".function=\"$1\"")
+    shift
+    for ARG in "$@"
+    do
+        ARG=$(jq -c <<<$ARG . || echo $ARG)
+        ARGS=$(jq <<<$ARGS -c '.Args+=[$a]' --arg a $ARG)
+    done
+    ./tribfed_chaincode_invoke.sh $OP $ARGS
+}
+
+invoke() {
+    cc invoke "$@"
+}
+
+query() {
+    cc query "$@"
+}
+
+echo '#################################################### (CHAINCODE PUT PERSONA FISICA)'
+P='{
+   "id":20104249729,
+   "persona":{
+      "id":20104249729,
+      "tipoid":"C",
+      "tipo":"F",
+      "estado":"A",
+      "nombre":"XXXXXXXXXXXX",
+      "apellido":"XXXXXXXX",
+      "materno":"XXXXXXX",
+      "sexo":"M",
+      "nacimiento":"1952-05-25",
+      "documento":{
+         "tipo":96,
+         "numero":"XXXXXXXX"
+      }
+   },
+   "impuestos":{
+      "11":{
+         "impuesto":11,
+         "periodo":201807,
+         "estado":"BD",
+         "dia":31,
+         "motivo":{
+            "id":64
+         },
+         "inscripcion":"1994-03-01",
+         "ds":"2003-04-14"
+      },
+      "20":{
+         "impuesto":20,
+         "periodo":201808,
+         "estado":"BD",
+         "dia":31,
+         "motivo":{
+            "id":40
+         },
+         "inscripcion":"2007-11-01",
+         "ds":"2018-05-18"
+      },
+      "21":{
+         "impuesto":21,
+         "periodo":201105,
+         "estado":"NA",
+         "dia":1,
+         "motivo":{
+            "id":109
+         },
+         "inscripcion":"2007-11-01",
+         "ds":"2011-09-06"
+      },
+      "30":{
+         "impuesto":30,
+         "periodo":201811,
+         "estado":"AC",
+         "dia":1,
+         "motivo":{
+            "id":44
+         },
+         "inscripcion":"2018-10-16",
+         "ds":"2018-10-16"
+      },
+      "308":{
+         "impuesto":308,
+         "periodo":200101,
+         "estado":"AC",
+         "dia":1,
+         "motivo":{
+            "id":64
+         },
+         "inscripcion":"1994-03-01",
+         "ds":"2003-04-14"
+      },
+      "5243":{
+         "impuesto":5243,
+         "periodo":201808,
+         "estado":"BD",
+         "dia":31,
+         "motivo":{
+            "id":557
+         },
+         "inscripcion":"2018-07-12",
+         "ds":"2018-07-12"
+      },
+      "5244":{
+         "impuesto":5244,
+         "periodo":201808,
+         "estado":"BD",
+         "dia":31,
+         "motivo":{
+            "id":555
+         },
+         "inscripcion":"2018-07-12",
+         "ds":"2018-07-12"
+      }
+   },
+   "categorias":{
+      "20.61":{
+         "impuesto":20,
+         "categoria":61,
+         "periodo":201804,
+         "estado":"BD",
+         "ds":"2018-05-18"
+      },
+      "20.62":{
+         "impuesto":20,
+         "categoria":62,
+         "periodo":201808,
+         "estado":"BD",
+         "ds":"2011-09-06"
+      },
+      "21.11":{
+         "impuesto":21,
+         "categoria":11,
+         "periodo":201105,
+         "estado":"AC",
+         "ds":"2011-09-06"
+      }
+   },
+   "contribmunis":{
+      "5244.98":{
+         "impuesto":5244,
+         "municipio":98,
+         "provincia":3,
+         "desde":"2018-07-01",
+         "ds":"2018-07-12"
+      }
+   },
+   "etiquetas":{
+      "39":{
+         "etiqueta":39,
+         "periodo":20090407,
+         "estado":"BD",
+         "ds":"2009-04-07"
+      },
+      "77":{
+         "etiqueta":77,
+         "periodo":20080208,
+         "estado":"BD",
+         "ds":"2008-02-08"
+      },
+      "108":{
+         "etiqueta":108,
+         "periodo":20110531,
+         "estado":"BD",
+         "ds":"2013-08-08"
+      }
+   },
+   "actividades":{
+      "1.883-842100":{
+         "org":1,
+         "actividad":"883-842100",
+         "orden":1,
+         "desde":"2018-06-01",
+         "ds":"2018-06-29"
+      },
+      "1.883-773030":{
+         "org":1,
+         "actividad":"883-773030",
+         "orden":2,
+         "desde":"2018-06-01",
+         "ds":"2018-07-12"
+      },
+      "1.883-772099":{
+         "org":1,
+         "actividad":"883-772099",
+         "orden":3,
+         "desde":"2018-06-01",
+         "ds":"2018-07-12"
+      }
+   },
+   "domicilios":{
+      "1.1.1":{
+         "org":1,
+         "tipo":1,
+         "orden":1,
+         "estado":11,
+         "provincia":7,
+         "localidad":"BARRIO-ACOSTA-NORTE",
+         "cp":"5000",
+         "nomenclador":"2115",
+         "calle":"XXXXXXXXX.",
+         "numero":1880,
+         "unidad":"A",
+         "piso":"02",
+         "ds":"2018-07-12"
+      },
+      "1.2.1":{
+         "org":1,
+         "tipo":2,
+         "orden":1,
+         "estado":2,
+         "provincia":7,
+         "cp":"1429",
+         "calle":"XXXXXXXXXXXXXXXXX",
+         "numero":3377,
+         "unidad":"A",
+         "piso":"02",
+         "ds":"2003-04-14"
+      }
+   },
+   "emails":{
+      "1":{
+         "orden":1,
+         "direccion":"XXXXXXXX@XXXX.XXX",
+         "tipo":1,
+         "estado":2,
+         "ds":"2018-06-29"
+      }
+   },
+   "telefonos":{
+      "1":{
+         "orden":1,
+         "pais":200,
+         "area":11,
+         "numero":99999999,
+         "tipo":2,
+         "linea":1,
+         "ds":"2018-06-29"
+      }
+   }
+}'
+invoke putPersona "$P"
+
+echo '#################################################### (CHAINCODE PUT PERSONA JURIDICA)'
+P='{
+   "id":30444444440,
+   "persona":{
+      "id":30444444440,
+      "tipoid":"C",
+      "tipo":"J",
+      "estado":"A",
+      "razonsocial":"XXXXX-XXX",
+      "formajuridica":78,
+      "mescierre":12,
+      "contratosocial":"2008-02-19"
+   },
+   "impuestos":{
+      "10":{
+         "impuesto":10,
+         "periodo":198010,
+         "estado":"AC",
+         "dia":1,
+         "motivo":{
+            "id":44
+         },
+         "inscripcion":"1980-10-01",
+         "ds":"2003-06-07"
+      },
+      "30":{
+         "impuesto":30,
+         "periodo":198903,
+         "estado":"AC",
+         "dia":1,
+         "motivo":{
+            "id":44
+         },
+         "inscripcion":"1989-03-01",
+         "ds":"2003-06-07"
+      }
+   },
+   "actividades":{
+      "1.883-120091":{
+         "org":1,
+         "actividad":"883-120091",
+         "orden":1,
+         "desde":"2013-11-01",
+         "ds":"2014-10-02"
+      },
+      "1.883-120099":{
+         "org":1,
+         "actividad":"883-120099",
+         "orden":2,
+         "desde":"2013-11-01",
+         "ds":"2014-10-02"
+      }
+   },
+   "domicilios":{
+      "1.1003.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1004.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1005.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1006.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1007.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1008.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1009.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1010.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1011.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1012.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1013.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1014.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1015.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1016.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1017.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1018.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1019.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1020.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1021.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1022.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1023.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1024.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1025.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1026.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1027.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1028.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1029.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1030.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1031.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1032.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1033.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1034.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1035.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1036.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1037.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1038.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1039.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1040.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1041.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1042.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1043.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1044.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1045.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1046.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1047.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1048.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1049.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1050.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1051.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1052.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1053.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1054.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1055.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1056.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1057.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1058.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1059.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1060.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1061.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1062.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1063.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1064.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1065.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1066.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1067.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1068.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1069.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1070.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1071.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1072.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1073.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1074.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1075.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1076.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1077.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1078.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1079.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1080.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1081.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1082.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1083.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1084.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1085.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1086.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1087.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1088.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1089.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1090.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1091.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1092.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1093.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1094.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1095.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1096.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1097.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1098.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1099.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1100.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1101.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1102.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1103.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1104.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1105.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1106.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1107.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1108.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1109.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1110.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1111.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1112.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1113.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1114.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1115.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1116.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1117.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1118.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1119.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1120.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1121.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1122.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1123.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1124.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1125.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1126.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1127.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1128.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1129.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1130.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1131.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1132.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1133.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1134.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1135.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1136.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1137.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1138.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1139.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1140.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1141.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1142.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1143.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1144.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1145.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1146.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1147.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1148.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1149.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1150.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1151.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1152.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1153.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1154.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1155.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1156.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1157.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1158.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1159.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1160.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1161.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1162.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1163.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1164.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1165.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1166.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1167.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1168.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1169.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1170.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1171.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1172.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1173.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1174.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1175.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1176.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1177.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1178.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1179.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1180.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1181.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1182.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1183.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1184.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1185.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1186.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1187.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1188.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1189.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1190.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1191.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1192.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1193.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1194.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1195.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1196.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1197.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1198.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1199.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1200.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1201.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1202.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1203.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1204.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1205.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1206.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1207.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1208.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1209.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1210.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1211.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1212.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1213.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1214.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1215.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1216.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1217.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1218.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1219.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1220.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1221.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1222.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1223.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1224.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1225.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1226.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1227.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1228.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1229.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1230.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1231.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1232.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1233.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1234.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1235.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1236.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1237.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1238.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1239.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1240.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1241.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1242.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1243.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1244.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1245.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1246.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1247.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1248.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1249.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1250.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1251.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1252.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1253.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1254.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1255.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1256.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1257.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1258.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1259.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1260.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1261.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1262.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1263.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1264.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1265.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1266.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1267.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1268.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1269.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1270.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1271.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1272.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1273.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1274.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1275.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1276.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1277.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1278.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1279.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1280.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1281.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1282.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1283.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1284.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1285.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1286.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1287.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1288.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1289.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1290.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1291.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1292.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1293.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1294.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1295.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1296.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1297.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1298.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1299.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1300.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1301.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1302.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"},
+"1.1303.1":{"org":1,"tipo":2,"orden":1,"estado":2,"provincia":1,"localidad":"MERLOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","cp":"1722","calle":"XXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXX","numero":26950,"ds":"2003-06-07"}
+   },
+   "telefonos":{
+      "1":{
+         "orden":1,
+         "pais":200,
+         "area":220,
+         "numero":9999999,
+         "tipo":6,
+         "linea":1,
+         "ds":"2013-12-16"
+      }
+   }
+}'
+invoke putPersona "$P"
+

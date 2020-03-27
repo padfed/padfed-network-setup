@@ -1,0 +1,44 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+---
+################################################################################
+#
+#   Section: Organizations
+#
+#   - This section defines the different organizational identities which will
+#   be referenced later in the configuration.
+#
+################################################################################
+Organizations:
+
+    - &CBA
+        # DefaultOrg defines the organization which is used in the sampleconfig
+        # of the fabric.git development environment
+        Name: CBA
+
+        # ID to load the MSP definition as
+        ID: CBA
+
+        MSPDir: crypto-config/peerOrganizations/cba.tribfed.gob.ar/msp
+
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('CBA.admin', 'CBA.client', 'CBA.peer')"
+            Writers:
+                Type: Signature
+        #TODO: Revisar porque no se puede crear el channel cuando AFIP.peer no queda incluido en esta Rule
+                Rule: "OR('CBA.admin', 'CBA.client', 'CBA.peer')"
+            Admins:
+                Type: Signature
+                Rule: "OR('CBA.admin')"
+
+        AnchorPeers:
+            # AnchorPeers defines the location of peers which can be used
+            # for cross org gossip communication.  Note, this value is only
+            # encoded in the genesis block in the Application section context
+            - Host: peer0.cba.tribfed.gob.ar
+              Port: 7051

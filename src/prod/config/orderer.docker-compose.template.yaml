@@ -1,0 +1,64 @@
+version: '2.4'
+
+networks:
+  {{DOCKER_NETWORK_NAME}}-orderer:
+    name: ${ENVIRONMENT:?ENVIRONMENT no encontrada}_${NETWORK_NAME:?NETWORK_NAME no encontrada}
+
+services:
+  {{NODE_NAME}}:
+    mem_limit: 4g
+    labels:
+      app: padfed
+    container_name: ${NODE_NAME:?NODE_NAME no encontrada}
+    image: hyperledger/fabric-orderer:${FABRIC_VERSION:?FABRIC_VERSION no encontrada}
+    environment:
+      - FABRIC_LOGGING_SPEC=${LOG_LEVEL:?LOG_LEVEL no encontrada}
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISFILE=/var/hyperledger/orderer/genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=${MSPID:?MSPID no encontrada}
+      - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
+      # enabled TLS
+      - ORDERER_GENERAL_TLS_ENABLED=${TLS_ENABLED:?TLS_ENABLED no encontrada}
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/orderer-tls-server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/orderer-tls-server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+
+      # enabled TLS client auth
+      - ORDERER_GENERAL_TLS_CLIENTAUTHREQUIRED=${TLS_CLIENT_AUTH_REQUIRED?TLS_CLIENT_AUTH_REQUIRED no encontrada}
+      - ORDERER_GENERAL_TLS_CLIENTROOTCAS
+
+      # RAFT
+      - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/var/hyperledger/orderer/tls/orderer-tls-client.crt
+      - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/var/hyperledger/orderer/tls/orderer-tls-client.key
+      - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+ 
+      # OPERATIONS
+      - ORDERER_METRICS_PROVIDER=prometheus
+      - ORDERER_OPERATIONS_LISTENADDRESS=:${OPERATIONS_PORT}
+      - ORDERER_OPERATIONS_TLS_ENABLED=${OPERATIONS_ENABLE}
+      - ORDERER_OPERATIONS_TLS_CLIENTAUTHREQUIRED=true
+      - ORDERER_OPERATIONS_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/orderer-tls-server.key
+      - ORDERER_OPERATIONS_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/orderer-tls-server.crt
+      # Warning !!!
+      # Para un orderer es ORDERER_OPERATIONS_TLS_CLIENTROOTCAS
+      # Para un peer es    ORDERER_OPERATIONS_TLS_CLIENTROOTCAS_FILES
+      - ORDERER_OPERATIONS_TLS_CLIENTROOTCAS=/var/hyperledger/orderer/operations/ca.crt
+
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: orderer
+    ports:
+      - ${ORDERER_PORT:?ORDERER_PORT no encontrada}:7050
+      - ${OPERATIONS_PORT}:${OPERATIONS_PORT}
+    volumes:
+        - ./crypto-config:/var/hyperledger/orderer
+        - ${FABRIC_LEDGER_STORE_PATH:?FABRIC_LEDGER_STORE_PATH no encontrada}/${MSPID}-${NODE_BASENAME}:/var/hyperledger/production/orderer
+    networks:
+      - {{DOCKER_NETWORK_NAME}}-orderer
+#   extra_hosts:
+#     - "raft1.:127.0.0.1"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "10"

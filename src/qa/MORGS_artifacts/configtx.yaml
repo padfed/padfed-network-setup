@@ -1,0 +1,38 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+---
+################################################################################
+#
+#   Section: Organizations
+#
+#   - This section defines the different organizational identities which will
+#   be referenced later in the configuration.
+#
+################################################################################
+Organizations:
+
+    - &MORGS
+        # DefaultOrg defines the organization which is used in the sampleconfig
+        # of the fabric.git development environment
+        Name: MORGS
+
+        # ID to load the MSP definition as
+        ID: MORGS
+
+        MSPDir: crypto-config/peerOrganizations/morgs.blockchain-tributaria.testnet.afip.gob.ar/msp
+
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('MORGS.admin', 'MORGS.client')"
+            Writers:
+                Type: Signature
+        #TODO: Revisar porque no se puede crear el channel cuando AFIP.peer no queda incluido en esta Rule
+                Rule: "OR('MORGS.admin', 'MORGS.client')"
+            Admins:
+                Type: Signature
+                Rule: "OR('MORGS.admin')"
+

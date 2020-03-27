@@ -1,0 +1,127 @@
+version: '2.4'
+
+networks:
+  tribfed:
+    name: ${ENVIRONMENT:?ENVIRONMENT key no encontrada/no definida/.env no localizado}_${FABRIC_NETWORK_NAME:?FABRIC_NETWORK_NAME key no encontrada/no definida/.env no localizado}
+
+services:
+  {{PEER_NAME}}.{{BLOCKCHAIN_NETWORK_NAME}}.{{ENVIRONMENT}}.{{ORG}}.{{ORGS_NETWORK_DOMAIN_NAME}}:
+    mem_limit: 4g
+    labels:
+      app: padfed
+    container_name: ${PEER_NAME}.${BLOCKCHAIN_NETWORK_NAME}.${ENVIRONMENT}.${ORG_NAME}.${ORGS_NETWORK_DOMAIN_NAME}
+    image: hyperledger/fabric-peer:${HLF_VERSION:?HLF_VERSION key no encontrada/no definida/.env no localizado}
+    environment:
+      - CORE_PEER_ID=${PEER_NAME}.${BLOCKCHAIN_NETWORK_NAME}.${ENVIRONMENT}.${ORG_NAME}.${ORGS_NETWORK_DOMAIN_NAME}
+      #- CORE_PEER_ADDRESS=${PEER_NAME}.${BLOCKCHAIN_NETWORK_NAME}.${ENVIRONMENT}.${ORG_NAME}.${ORGS_NETWORK_DOMAIN_NAME}:7051
+      - CORE_PEER_ADDRESSAUTODETECT=true
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${ENVIRONMENT}_${FABRIC_NETWORK_NAME}
+      - CORE_PEER_LOCALMSPID=${PEER_MSP}
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/peer/msp
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_PEER_NETWORKID=${ENVIRONMENT}
+      #LOGGING/PROFILING
+      - FABRIC_LOGGING_SPEC=${LOG_LEVEL:?LOG_LEVEL key no encontrada/no definida/.env no localizado}
+      - CORE_VM_DOCKER_ATTACHSTDOUT=true
+      #- CORE_PEER_PROFILE_ENABLED=true
+
+      # GOSSIP
+      - CORE_PEER_GOSSIP_ENDPOINT=${PEER_NAME}.${BLOCKCHAIN_NETWORK_NAME}.${ENVIRONMENT}.${ORG_NAME}.${ORGS_NETWORK_DOMAIN_NAME}:${PEER_NODE_PRINCIPAL_PORT}
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=${PEER_NAME}.${BLOCKCHAIN_NETWORK_NAME}.${ENVIRONMENT}.${ORG_NAME}.${ORGS_NETWORK_DOMAIN_NAME}:${PEER_NODE_PRINCIPAL_PORT}
+      - CORE_PEER_GOSSIP_BOOTSTRAP=${PEER_ANCHOR_NAME}.${BLOCKCHAIN_NETWORK_NAME}.${ENVIRONMENT}.${ORG_NAME}.${ORGS_NETWORK_DOMAIN_NAME}:${PEER_ANCHOR_PORT}
+      #- CORE_PEER_GOSSIP_USELEADERELECTION=true
+      #- CORE_PEER_GOSSIP_ORGLEADER=false
+      #- CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+
+      # TLS
+      - CORE_PEER_TLS_ENABLED=${TLS_ENABLED:?TLS_ENABLED key no encontrada --> .env no localizado}
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/peer/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/peer/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/peer/tls/ca.crt
+
+      # TLS client auth
+      - CORE_PEER_TLS_CLIENTAUTHREQUIRED=${TLS_CLIENT_AUTH_REQUIRED?TLS_CLIENT_AUTH_REQUIRED key no encontrada/no definida/.env no localizado}
+      - CORE_PEER_TLS_CLIENTCERT_FILE=/etc/hyperledger/peer/tls/server.crt
+      - CORE_PEER_TLS_CLIENTKEY_FILE=/etc/hyperledger/peer/tls/server.key
+      - CORE_PEER_TLS_CLIENTROOTCAS_FILES=/etc/hyperledger/peer/tls/ca.crt
+
+      # LEDGER
+      - CORE_LEDGER_STATE_TOTALQUERYLIMIT=100000
+
+      #MONITORING
+      #- CORE_METRICS_PROVIDER=prometheus
+      #- CORE_OPERATIONS_LISTENADDRESS=:9443
+      #- CORE_OPERATIONS_TLS_ENABLED=true
+      #- CORE_OPERATIONS_TLS_CLIENTAUTHREQUIRED=true
+      #- CORE_OPERATIONS_TLS_KEY=/etc/hyperledger/peer/tls/server.key
+      #- CORE_OPERATIONS_TLS_CERT=/etc/hyperledger/peer/tls/server.crt
+      #- CORE_OPERATIONS_TLS_CLIENTROOTCAS_FILES=[/etc/hyperledger/peer/tls/ca.crt]
+
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    #command: peer node start --peer-chaincodedev=true
+    command: peer node start
+    ports:
+      - ${PEER_NODE_PRINCIPAL_PORT}:7051
+      #- 9443:9443
+
+    volumes:
+        - /var/run/:/host/var/run/
+        - ${FABRIC_INSTANCE_PATH:?FABRIC_INSTANCE_PATH key no encontrada --> .env no localizado}/crypto-config:/etc/hyperledger/configtx
+        - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/${BLOCKCHAIN_NETWORK_NAME}.${ENVIRONMENT}.${ORG_NAME}.${ORGS_NETWORK_DOMAIN_NAME}/peers/${PEER_NAME}.${BLOCKCHAIN_NETWORK_NAME}.${ENVIRONMENT}.${ORG_NAME}.${ORGS_NETWORK_DOMAIN_NAME}/msp:/etc/hyperledger/peer/msp
+        - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/${BLOCKCHAIN_NETWORK_NAME}.${ENVIRONMENT}.${ORG_NAME}.${ORGS_NETWORK_DOMAIN_NAME}/peers/${PEER_NAME}.${BLOCKCHAIN_NETWORK_NAME}.${ENVIRONMENT}.${ORG_NAME}.${ORGS_NETWORK_DOMAIN_NAME}/tls:/etc/hyperledger/peer/tls
+        - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/${BLOCKCHAIN_NETWORK_NAME}.${ENVIRONMENT}.${ORG_NAME}.${ORGS_NETWORK_DOMAIN_NAME}/users:/etc/hyperledger/msp/users
+        - ${FABRIC_LEDGER_STORE_PATH:?FABRIC_LEDGER_STORE_PATH key no encontrada/no definida/.env no localizado}/${PEER_NAME}.${BLOCKCHAIN_NETWORK_NAME}.${ENVIRONMENT}.${ORG_NAME}.${ORGS_NETWORK_DOMAIN_NAME}:/var/hyperledger/production
+    networks:
+      - tribfed
+#    extra_hosts:
+#      - "orderer0.orderer.blockchain-tributaria.testnet.afip.gob.ar:${ORDERER_ADDRESS:?ORDERER_ADDRESS key no encontrada/no definida/.env no localizado}"
+
+  {{PEER_NAME}}.{{BLOCKCHAIN_NETWORK_NAME}}.{{ENVIRONMENT}}.{{ORG}}.{{ORGS_NETWORK_DOMAIN_NAME}}.cli:
+    mem_limit: 1g
+    labels:
+      app: padfed
+    container_name: ${PEER_NAME}.${BLOCKCHAIN_NETWORK_NAME}.${ENVIRONMENT}.${ORG_NAME}.${ORGS_NETWORK_DOMAIN_NAME}.cli
+    image: hyperledger/fabric-tools:${HLF_VERSION:?HLF_VERSION key no encontrada/no definida/.env no localizado}
+    tty: true
+    stdin_open: true
+    environment:
+      - GOPATH=/opt/gopath
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - FABRIC_LOGGING_SPEC=${LOG_LEVEL:?LOG_LEVEL key no encontrada/no definida/.env no localizado}
+      - CORE_PEER_ID=cli
+      - CORE_PEER_ADDRESS=${PEER_NAME}.${BLOCKCHAIN_NETWORK_NAME}.${ENVIRONMENT}.${ORG_NAME}.${ORGS_NETWORK_DOMAIN_NAME}:${PEER_NODE_PRINCIPAL_PORT}
+      - CORE_PEER_LOCALMSPID=${PEER_MSP}
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp
+
+      # TLS
+      - CORE_PEER_TLS_ENABLED=${TLS_ENABLED:?TLS_ENABLED key no encontrada --> .env no localizado}
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/peer/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/peer/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/peer/tls/ca.crt
+
+      # TLS client auth
+      - CORE_PEER_TLS_CLIENTAUTHREQUIRED=${TLS_CLIENT_AUTH_REQUIRED?TLS_CLIENT_AUTH_REQUIRED key no encontrada/no definida/.env no localizado}
+      - CORE_PEER_TLS_CLIENTKEY_FILE=/etc/hyperledger/tls/client.key
+      - CORE_PEER_TLS_CLIENTCERT_FILE=/etc/hyperledger/tls/client.crt
+
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: /bin/bash
+    volumes:
+      - /var/run:/host/var/run/
+      - ${FABRIC_INSTANCE_PATH:?FABRIC_INSTANCE_PATH key no encontrada --> .env no localizado}/crypto-config:/etc/hyperledger/configtx
+      - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/${BLOCKCHAIN_NETWORK_NAME}.${ENVIRONMENT}.${ORG_NAME}.${ORGS_NETWORK_DOMAIN_NAME}/users/Admin@${BLOCKCHAIN_NETWORK_NAME}.${ENVIRONMENT}.${ORG_NAME}.${ORGS_NETWORK_DOMAIN_NAME}/msp:/etc/hyperledger/msp
+      - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/${BLOCKCHAIN_NETWORK_NAME}.${ENVIRONMENT}.${ORG_NAME}.${ORGS_NETWORK_DOMAIN_NAME}/users/Admin@${BLOCKCHAIN_NETWORK_NAME}.${ENVIRONMENT}.${ORG_NAME}.${ORGS_NETWORK_DOMAIN_NAME}/tls:/etc/hyperledger/tls
+      - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/${BLOCKCHAIN_NETWORK_NAME}.${ENVIRONMENT}.${ORG_NAME}.${ORGS_NETWORK_DOMAIN_NAME}/peers/${PEER_NAME}.${BLOCKCHAIN_NETWORK_NAME}.${ENVIRONMENT}.${ORG_NAME}.${ORGS_NETWORK_DOMAIN_NAME}/tls:/etc/hyperledger/peer/tls
+      - ${FABRIC_INSTANCE_PATH}/crypto-config/ordererOrganizations/orderer/tlsca:/etc/hyperledger/orderer/tls
+      - ${FABRIC_INSTANCE_PATH}/gopath:/opt/gopath/
+    networks:
+      - tribfed
+#    extra_hosts:
+#      - "orderer0.orderer.blockchain-tributaria.testnet.afip.gob.ar:${ORDERER_ADDRESS:?ORDERER_ADDRESS key no encontrada/no definida/.env no localizado}"
+
+# Ajuste de politica de logging que sobreescribe la definida a nivel de docker daemon https://docs.docker.com/compose/compose-file/#logging
+#    logging:
+#      driver: "json-file"
+#      options:
+#        max-size: "100m"
+#        max-file: "10"

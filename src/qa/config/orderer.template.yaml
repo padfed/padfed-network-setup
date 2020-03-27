@@ -1,0 +1,58 @@
+version: '2.4'
+
+networks:
+  tribfed:
+    name: ${ENVIRONMENT:?ENVIRONMENT key no encontrada/no definida/.env no localizado}_${FABRIC_NETWORK_NAME:?FABRIC_NETWORK_NAME key no encontrada/no definida/.env no localizado}
+
+services:
+  {{ORDERER_HOSTNAME}}.{{ORDERER_DOMAIN_NAME}}.{{ENVIRONMENT}}.{{ORDERER_NETWORK_DOMAIN_NAME}}:
+    mem_limit: 4g
+    labels:
+      app: padfed
+    container_name: ${ORDERER_HOSTNAME}.${ORDERER_DOMAIN_NAME}.${ENVIRONMENT}.${ORDERER_NETWORK_DOMAIN_NAME}
+    image: hyperledger/fabric-orderer:${HLF_VERSION:?HLF_VERSION key no encontrada/no definida/.env no localizado}
+    environment:
+      - FABRIC_LOGGING_SPEC=${LOG_LEVEL:?LOG_LEVEL key no encontrada/no definida/.env no localizado}
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISFILE=/etc/hyperledger/configtx/genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=${ORDERER_MSP:?ORDERER_MSP key no encontrada/no definida/.env no localizado}
+      - ORDERER_GENERAL_LOCALMSPDIR=/etc/hyperledger/msp/orderer/msp
+      # enabled TLS
+      - ORDERER_GENERAL_TLS_ENABLED=${TLS_ENABLED:?TLS_ENABLED key no encontrada --> .env no localizado}
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+
+      # enabled TLS client auth
+      - ORDERER_GENERAL_TLS_CLIENTAUTHREQUIRED=${TLS_CLIENT_AUTH_REQUIRED?TLS_CLIENT_AUTH_REQUIRED key no encontrada/no definida/.env no localizado}
+      - ORDERER_GENERAL_TLS_CLIENTROOTCAS
+
+      #MONITORING
+      #- ORDERER_METRICS_PROVIDER=prometheus
+      #- ORDERER_OPERATIONS_LISTENADDRESS=:8443
+      #- ORDERER_OPERATIONS_TLS_ENABLED=false
+      #- ORDERER_OPERATIONS_TLS_CLIENTAUTHREQUIRED=false
+      #- ORDERER_OPERATIONS_TLS_KEY=/etc/hyperledger/peer/tls/server.key
+      #- ORDERER_OPERATIONS_TLS_CERT=/etc/hyperledger/peer/tls/server.crt
+      #- ORDERER_OPERATIONS_TLS_CLIENTROOTCAS_FILES=[/etc/hyperledger/peer/tls/ca.crt]
+
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: orderer
+    ports:
+      - ${ORDERER_PORT:?ORDERER_PORT key no encontrada/no definida/.env no localizado}:7050
+      #- 8443:8443
+    volumes:
+        - ${FABRIC_INSTANCE_PATH:?FABRIC_INSTANCE_PATH key no encontrada/no definida/.env no localizado}/crypto-config/:/etc/hyperledger/configtx
+        - ${FABRIC_LEDGER_STORE_PATH:?FABRIC_LEDGER_STORE_PATH key no encontrada/no definida/.env no localizado}/${ORDERER_HOSTNAME}.${ORDERER_DOMAIN_NAME}.${ENVIRONMENT}.${ORDERER_NETWORK_DOMAIN_NAME}:/var/hyperledger/production/orderer
+        - ${FABRIC_INSTANCE_PATH}/crypto-config/ordererOrganizations/${ORDERER_DOMAIN_NAME}.${ENVIRONMENT}.${ORDERER_NETWORK_DOMAIN_NAME}/orderers/${ORDERER_HOSTNAME}.${ORDERER_DOMAIN_NAME}.${ENVIRONMENT}.${ORDERER_NETWORK_DOMAIN_NAME}/msp:/etc/hyperledger/msp/orderer/msp
+        - ${FABRIC_INSTANCE_PATH}/crypto-config/ordererOrganizations/${ORDERER_DOMAIN_NAME}.${ENVIRONMENT}.${ORDERER_NETWORK_DOMAIN_NAME}/orderers/${ORDERER_HOSTNAME}.${ORDERER_DOMAIN_NAME}.${ENVIRONMENT}.${ORDERER_NETWORK_DOMAIN_NAME}/tls/:/var/hyperledger/orderer/tls
+    networks:
+      - tribfed
+
+# Ajuste de politica de logging que sobreescribe la definida a nivel de docker daemon https://docs.docker.com/compose/compose-file/#logging
+#    logging:
+#      driver: "json-file"
+#      options:
+#        max-size: "100m"
+#        max-file: "10"

@@ -1,0 +1,25 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+# ---------------------------------------------------------------------------
+# "PeerOrgs" - Definition of organizations managing peer nodes
+# ---------------------------------------------------------------------------
+PeerOrgs:
+  # ---------------------------------------------------------------------------
+  # CBA
+  # ---------------------------------------------------------------------------
+  - Name: CBA
+    Domain: cba.tribfed.gob.ar
+    CA:
+      Hostname: ca
+      Country: AR
+      Province: CBA
+      Locality: CBA
+      OrganizationalUnit: CBA
+    EnableNodeOUs: true
+    Template:
+      Count: 2
+    Users:
+      Count: 4

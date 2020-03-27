@@ -1,0 +1,704 @@
+version: '2.4'
+
+networks:
+  tribfed:
+    name: ${ENVIRONMENT:?ENVIRONMENT key no encontrada/no definida/.env no localizado}_${FABRIC_NETWORK_NAME:?FABRIC_NETWORK_NAME key no encontrada/no definida/.env no localizado}
+
+services:
+
+################## ORG AFIP ##################
+
+  orderer.afip.tribfed.gob.ar:
+    mem_limit: 1g
+    container_name: ${ORDERER_NAME}
+    image: hyperledger/fabric-orderer:${HLF_VERSION:?HLF_VERSION key no encontrada/no definida/.env no localizado}
+    environment:
+      - FABRIC_LOGGING_SPEC=${LOG_LEVEL:?LOG_LEVEL key no encontrada/no definida/.env no localizado}
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISFILE=/etc/hyperledger/configtx/genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=AFIP
+      - ORDERER_GENERAL_LOCALMSPDIR=/etc/hyperledger/msp/orderer/msp
+      # enabled TLS
+      - ORDERER_GENERAL_TLS_ENABLED=${TLS_ENABLED:?TLS_ENABLED key no encontrada --> .env no localizado}
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_GENERAL_TLS_CLIENTAUTHREQUIRED=${TLS_CLIENT_AUTH_REQUIRED?TLS_CLIENT_AUTH_REQUIRED key no encontrada/no definida/.env no localizado}
+      - ORDERER_GENERAL_TLS_CLIENTROOTCAS
+
+      #MONITORING
+      - ORDERER_METRICS_PROVIDER=prometheus
+      - ORDERER_OPERATIONS_LISTENADDRESS=:8443
+      - ORDERER_OPERATIONS_TLS_ENABLED=false
+      - ORDERER_OPERATIONS_TLS_CLIENTAUTHREQUIRED=false
+
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: orderer
+    ports:
+      - 7050:7050
+      - 8443:8443
+    volumes:
+        - ${FABRIC_INSTANCE_PATH:?FABRIC_INSTANCE_PATH key no encontrada --> .env no localizado}/crypto-config/:/etc/hyperledger/configtx
+        - ${FABRIC_INSTANCE_PATH}/${ORDERER_NAME}:/var/hyperledger/production/orderer
+        - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/afip.tribfed.gob.ar/peers/${ORDERER_NAME}/msp:/etc/hyperledger/msp/orderer/msp
+        - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/afip.tribfed.gob.ar/peers/${ORDERER_NAME}/tls/:/var/hyperledger/orderer/tls
+
+    networks:
+      - tribfed
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "10"
+
+################## ORG AFIP ##################
+
+  peer0.afip.tribfed.gob.ar:
+    mem_limit: 1g
+    container_name: peer0.afip.tribfed.gob.ar
+    image: hyperledger/fabric-peer:${HLF_VERSION:?HLF_VERSION key no encontrada/no definida/.env no localizado}
+    environment:
+      - NO_PROXY=localhost,127.0.0.1,${ORDERER_NAME},
+        peer0.afip.tribfed.gob.ar,peer1.afip.tribfed.gob.ar,
+        peer0.arba.tribfed.gob.ar,peer1.arba.tribfed.gob.ar,
+        peer0.comarb.tribfed.gob.ar,peer1.comarb.tribfed.gob.ar
+      - CORE_PEER_ID=peer0.afip.tribfed.gob.ar
+      - CORE_PEER_ADDRESS=peer0.afip.tribfed.gob.ar:7051
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${ENVIRONMENT}_${FABRIC_NETWORK_NAME}
+      - CORE_PEER_LOCALMSPID=AFIP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/peer/msp
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+
+      #MONITORING
+      - CORE_METRICS_PROVIDER=prometheus
+      - CORE_OPERATIONS_LISTENADDRESS=:9443
+      - CORE_OPERATIONS_TLS_ENABLED=false
+      - CORE_OPERATIONS_TLS_CLIENTAUTHREQUIRED=false
+
+      #- CORE_METRICS_STATSD_ADDRESS=10.20.109.238:8125
+      #- CORE_METRICS_STATSD_NETWORK=udp
+      #- CORE_METRICS_STATSD_WRITEINTERVAL=2s
+      #- CORE_METRICS_STATSD_PREFIX:peer0
+
+      #LOGGING/PROFILING
+      #- CORE_CHAINCODE_LOGGING_SHIM=INFO
+      #- CORE_CHAINCODE_LOGGING_LEVEL=INFO
+      #- CORE_PEER_PROFILE_ENABLED=true
+      #- CORE_LOGGING_GRPC=DEBUG
+      - FABRIC_LOGGING_SPEC=${LOG_LEVEL:?LOG_LEVEL key no encontrada/no definida/.env no localizado}
+      - CORE_VM_DOCKER_ATTACHSTDOUT=true
+
+      # GOSSIP
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.afip.tribfed.gob.ar:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.afip.tribfed.gob.ar:7051
+      #- CORE_PEER_GOSSIP_USELEADERELECTION=true
+      #- CORE_PEER_GOSSIP_ORGLEADER=false
+      #- CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+
+      # TLS
+      - CORE_PEER_TLS_ENABLED=${TLS_ENABLED:?TLS_ENABLED key no encontrada --> .env no localizado}
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/peer/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/peer/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/peer/tls/ca.crt
+
+      - CORE_PEER_TLS_CLIENTAUTHREQUIRED=${TLS_CLIENT_AUTH_REQUIRED?TLS_CLIENT_AUTH_REQUIRED key no encontrada/no definida/.env no localizado}
+      - CORE_PEER_TLS_CLIENTCERT_FILE=/etc/hyperledger/peer/tls/server.crt
+      - CORE_PEER_TLS_CLIENTKEY_FILE=/etc/hyperledger/peer/tls/server.key
+      - CORE_PEER_TLS_CLIENTROOTCAS_FILES=/etc/hyperledger/peer/tls/ca.crt
+
+      # LEDGER
+      - CORE_LEDGER_STATE_TOTALQUERYLIMIT=100000
+
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    #command: peer node start --peer-chaincodedev=true
+    command: peer node start
+    ports:
+      - 7051:7051
+      - 9443:9443
+    volumes:
+        - /var/run/:/host/var/run/
+        - ${FABRIC_INSTANCE_PATH:?FABRIC_INSTANCE_PATH key no encontrada --> .env no localizado}/crypto-config:/etc/hyperledger/configtx
+        - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/afip.tribfed.gob.ar/peers/peer0.afip.tribfed.gob.ar/msp:/etc/hyperledger/peer/msp
+        - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/afip.tribfed.gob.ar/peers/peer0.afip.tribfed.gob.ar/tls:/etc/hyperledger/peer/tls
+        - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/afip.tribfed.gob.ar/users:/etc/hyperledger/msp/users
+        - ${FABRIC_INSTANCE_PATH}/peer0.afip.tribfed.gob.ar:/var/hyperledger/production
+    networks:
+      - tribfed
+    depends_on:
+      - ${ORDERER_NAME}
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "10"
+
+  peer1.afip.tribfed.gob.ar:
+    mem_limit: 1g
+    container_name: peer1.afip.tribfed.gob.ar
+    image: hyperledger/fabric-peer:${HLF_VERSION:?HLF_VERSION key no encontrada/no definida/.env no localizado}
+    environment:
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.afip.tribfed.gob.ar:7051
+      #- CORE_PEER_GOSSIP_BOOTSTRAP=peer0.afip.tribfed.gob.ar:7051
+      - NO_PROXY=localhost,127.0.0.1,${ORDERER_NAME},
+        peer0.afip.tribfed.gob.ar,peer1.afip.tribfed.gob.ar,
+        peer0.arba.tribfed.gob.ar,peer1.arba.tribfed.gob.ar,
+        peer0.comarb.tribfed.gob.ar,peer1.comarb.tribfed.gob.ar
+      - FABRIC_LOGGING_SPEC=${LOG_LEVEL:?LOG_LEVEL key no encontrada/no definida/.env no localizado}
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_PEER_ID=peer1.afip.tribfed.gob.ar
+      - CORE_PEER_ADDRESS=peer1.afip.tribfed.gob.ar:7051
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${ENVIRONMENT}_${FABRIC_NETWORK_NAME}
+      - CORE_VM_DOCKER_ATTACHSTDOUT=true
+      - CORE_PEER_LOCALMSPID=AFIP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/peer/msp
+
+      # TLS
+      - CORE_PEER_TLS_ENABLED=${TLS_ENABLED:?TLS_ENABLED key no encontrada --> .env no localizado}
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/peer/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/peer/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/peer/tls/ca.crt
+
+      - CORE_PEER_TLS_CLIENTAUTHREQUIRED=${TLS_CLIENT_AUTH_REQUIRED?TLS_CLIENT_AUTH_REQUIRED key no encontrada/no definida/.env no localizado}
+      - CORE_PEER_TLS_CLIENTCERT_FILE=/etc/hyperledger/peer/tls/server.crt
+      - CORE_PEER_TLS_CLIENTKEY_FILE=/etc/hyperledger/peer/tls/server.key
+      - CORE_PEER_TLS_CLIENTROOTCAS_FILES=/etc/hyperledger/peer/tls/ca.crt
+
+      # LEDGER
+      - CORE_LEDGER_STATE_TOTALQUERYLIMIT=100000
+
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: peer node start
+    ports:
+      - 8051:7051
+    volumes:
+        - /var/run/:/host/var/run/
+        - ${FABRIC_INSTANCE_PATH:?FABRIC_INSTANCE_PATH key no encontrada --> .env no localizado}/crypto-config:/etc/hyperledger/configtx
+        - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/afip.tribfed.gob.ar/peers/peer1.afip.tribfed.gob.ar/msp:/etc/hyperledger/peer/msp
+        - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/afip.tribfed.gob.ar/peers/peer1.afip.tribfed.gob.ar/tls:/etc/hyperledger/peer/tls
+        - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/afip.tribfed.gob.ar/users:/etc/hyperledger/msp/users
+        - ${FABRIC_INSTANCE_PATH}/peer1.afip.tribfed.gob.ar:/var/hyperledger/production
+    networks:
+      - tribfed
+    depends_on:
+      - ${ORDERER_NAME}
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "10"
+
+  peer0_afip_cli:
+    mem_limit: 1g
+    container_name: peer0_afip_cli
+    image: hyperledger/fabric-tools:${HLF_VERSION:?HLF_VERSION key no encontrada/no definida/.env no localizado}
+    tty: true
+    stdin_open: true
+    environment:
+      - NO_PROXY=localhost,127.0.0.1,${ORDERER_NAME},
+        peer0.afip.tribfed.gob.ar,peer1.afip.tribfed.gob.ar,
+        peer0.arba.tribfed.gob.ar,peer1.arba.tribfed.gob.ar,
+        peer0.comarb.tribfed.gob.ar,peer1.comarb.tribfed.gob.ar
+      - GOPATH=/opt/gopath
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+#      - CORE_LOGGING_GRPC=DEBUG
+      - FABRIC_LOGGING_SPEC=${LOG_LEVEL:?LOG_LEVEL key no encontrada/no definida/.env no localizado}
+      - CORE_PEER_ID=cli
+      - CORE_PEER_ADDRESS=peer0.afip.tribfed.gob.ar:7051
+      - CORE_PEER_LOCALMSPID=AFIP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp
+      # TLS
+      - CORE_PEER_TLS_ENABLED=${TLS_ENABLED:?TLS_ENABLED key no encontrada --> .env no localizado}
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/peer/tls/ca.crt
+      - CORE_PEER_TLS_CLIENTAUTHREQUIRED=${TLS_CLIENT_AUTH_REQUIRED?TLS_CLIENT_AUTH_REQUIRED key no encontrada/no definida/.env no localizado}
+      - CORE_PEER_TLS_CLIENTKEY_FILE=/etc/hyperledger/tls/client.key
+      - CORE_PEER_TLS_CLIENTCERT_FILE=/etc/hyperledger/tls/client.crt
+
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: /bin/bash
+    volumes:
+      - /var/run:/host/var/run/
+      - ${FABRIC_INSTANCE_PATH:?FABRIC_INSTANCE_PATH key no encontrada --> .env no localizado}/crypto-config:/etc/hyperledger/configtx
+      - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/afip.tribfed.gob.ar/users/Admin@afip.tribfed.gob.ar/msp:/etc/hyperledger/msp
+      - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/afip.tribfed.gob.ar/users/Admin@afip.tribfed.gob.ar/tls:/etc/hyperledger/tls
+      - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/afip.tribfed.gob.ar/peers/peer0.afip.tribfed.gob.ar/tls:/etc/hyperledger/peer/tls
+      - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/afip.tribfed.gob.ar/tlsca:/etc/hyperledger/orderer/tls
+      - ${CHAINCODE_DIR:?CHAINCODE_DIR no encontrada}:/opt/gopath/src/$CHAINCODE_PACKAGE
+      - $JAVA_CHAINCODE_DIR:/opt/gopath/src/java
+      - ${FABRIC_INSTANCE_PATH}/peer0_afip_cli/signing:/signing
+      # TLS ROOT CAs so than it can invoke chaincode over peers of other orgs
+      - ${FABRIC_INSTANCE_PATH}/peer0_afip_cli/tls_root_cas:/etc/hyperledger/tls_root_cas
+
+    networks:
+      - tribfed
+    depends_on:
+      - ${ORDERER_NAME}
+      - peer0.afip.tribfed.gob.ar
+
+  peer0_afip_chaincode:
+    mem_limit: 1g
+    container_name: peer0_afip_chaincode
+    image: hyperledger/fabric-ccenv:${HLF_VERSION:?HLF_VERSION key no encontrada/no definida/.env no localizado}
+    tty: true
+    environment:
+      - NO_PROXY=localhost,127.0.0.1,${ORDERER_NAME},
+        peer0.afip.tribfed.gob.ar,peer1.afip.tribfed.gob.ar,
+        peer0.arba.tribfed.gob.ar,peer1.arba.tribfed.gob.ar,
+        peer0.comarb.tribfed.gob.ar,peer1.comarb.tribfed.gob.ar
+      - GOPATH=/opt/gopath
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - FABRIC_LOGGING_SPEC=${LOG_LEVEL:?LOG_LEVEL key no encontrada/no definida/.env no localizado}
+      - CORE_PEER_ID=peer0_afip_chaincode
+      - CORE_PEER_ADDRESS=peer0.afip.tribfed.gob.ar:7051
+      - CORE_PEER_LOCALMSPID=AFIP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp
+    working_dir: /opt/gopath/src/chaincode
+    command: /bin/bash -c 'sleep 6000000'
+    volumes:
+        - /var/run/:/host/var/run/
+        - ${FABRIC_INSTANCE_PATH:?FABRIC_INSTANCE_PATH key no encontrada --> .env no localizado}/crypto-config/peerOrganizations/afip.tribfed.gob.ar/users/Admin@afip.tribfed.gob.ar/msp:/etc/hyperledger/msp
+        - $CHAINCODE_DIR:/opt/gopath/src/$CHAINCODE_PACKAGE
+    networks:
+      - tribfed
+    depends_on:
+      - ${ORDERER_NAME}
+      - peer0.afip.tribfed.gob.ar
+
+  peer1_afip_cli:
+    mem_limit: 1g
+    container_name: peer1_afip_cli
+    image: hyperledger/fabric-tools:${HLF_VERSION:?HLF_VERSION key no encontrada/no definida/.env no localizado}
+    tty: true
+    stdin_open: true
+    environment:
+      - NO_PROXY=localhost,127.0.0.1,${ORDERER_NAME},
+        peer0.afip.tribfed.gob.ar,peer1.afip.tribfed.gob.ar,
+        peer0.arba.tribfed.gob.ar,peer1.arba.tribfed.gob.ar,
+        peer0.comarb.tribfed.gob.ar,peer1.comarb.tribfed.gob.ar
+      - GOPATH=/opt/gopath
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - FABRIC_LOGGING_SPEC=${LOG_LEVEL:?LOG_LEVEL key no encontrada/no definida/.env no localizado}
+      - CORE_PEER_ID=cli
+      - CORE_PEER_ADDRESS=peer1.afip.tribfed.gob.ar:7051
+      - CORE_PEER_LOCALMSPID=AFIP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp
+      # TLS
+      - CORE_PEER_TLS_ENABLED=${TLS_ENABLED:?TLS_ENABLED key no encontrada --> .env no localizado}
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/peer/tls/ca.crt
+      - CORE_PEER_TLS_CLIENTAUTHREQUIRED=${TLS_CLIENT_AUTH_REQUIRED?TLS_CLIENT_AUTH_REQUIRED key no encontrada/no definida/.env no localizado}
+      - CORE_PEER_TLS_CLIENTKEY_FILE=/etc/hyperledger/tls/client.key
+      - CORE_PEER_TLS_CLIENTCERT_FILE=/etc/hyperledger/tls/client.crt
+
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: /bin/bash
+    volumes:
+      - /var/run:/host/var/run/
+      - ${FABRIC_INSTANCE_PATH:?FABRIC_INSTANCE_PATH key no encontrada --> .env no localizado}/crypto-config:/etc/hyperledger/configtx
+      - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/afip.tribfed.gob.ar/users/Admin@afip.tribfed.gob.ar/msp:/etc/hyperledger/msp
+      - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/afip.tribfed.gob.ar/users/Admin@afip.tribfed.gob.ar/tls:/etc/hyperledger/tls
+      - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/afip.tribfed.gob.ar/peers/peer1.afip.tribfed.gob.ar/tls:/etc/hyperledger/peer/tls
+      - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/afip.tribfed.gob.ar/tlsca:/etc/hyperledger/orderer/tls
+      - $CHAINCODE_DIR:/opt/gopath/src/$CHAINCODE_PACKAGE
+    networks:
+      - tribfed
+    depends_on:
+      - ${ORDERER_NAME}
+      - peer1.afip.tribfed.gob.ar
+
+################## ORG COMARB ##################
+  peer0.comarb.tribfed.gob.ar:
+    mem_limit: 1g
+    container_name: peer0.comarb.tribfed.gob.ar
+    image: hyperledger/fabric-peer:${HLF_VERSION:?HLF_VERSION key no encontrada/no definida/.env no localizado}
+    environment:
+      #- CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.comarb.tribfed.gob.ar:7051
+      - NO_PROXY=localhost,127.0.0.1,${ORDERER_NAME},
+        peer0.afip.tribfed.gob.ar,peer1.afip.tribfed.gob.ar,
+        peer0.arba.tribfed.gob.ar,peer1.arba.tribfed.gob.ar,
+        peer0.comarb.tribfed.gob.ar,peer1.comarb.tribfed.gob.ar
+        # LOGGING LEVELS
+#      - CORE_CHAINCODE_LOGGING_SHIM=DEBUG
+#      - CORE_CHAINCODE_LOGGING_LEVEL=DEBUG
+#      - CORE_LOGGING_GRPC=DEBUG
+      - FABRIC_LOGGING_SPEC=${LOG_LEVEL:?LOG_LEVEL key no encontrada/no definida/.env no localizado}
+#      - NPM_CONFIG_LOGLEVEL=DEBUG
+      #
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_PEER_ID=peer0.comarb.tribfed.gob.ar
+      - CORE_PEER_ADDRESS=peer0.comarb.tribfed.gob.ar:7051
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${ENVIRONMENT}_${FABRIC_NETWORK_NAME}
+      - CORE_VM_DOCKER_ATTACHSTDOUT=true
+      - CORE_PEER_LOCALMSPID=COMARB
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/peer/msp
+
+      # TLS
+      - CORE_PEER_TLS_ENABLED=${TLS_ENABLED:?TLS_ENABLED key no encontrada --> .env no localizado}
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/peer/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/peer/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/peer/tls/ca.crt
+      - CORE_PEER_TLS_CLIENTAUTHREQUIRED=${TLS_CLIENT_AUTH_REQUIRED?TLS_CLIENT_AUTH_REQUIRED key no encontrada/no definida/.env no localizado}
+      - CORE_PEER_TLS_CLIENTCERT_FILE=/etc/hyperledger/peer/tls/server.crt
+      - CORE_PEER_TLS_CLIENTKEY_FILE=/etc/hyperledger/peer/tls/server.key
+      - CORE_PEER_TLS_CLIENTROOTCAS_FILES=/etc/hyperledger/peer/tls/ca.crt
+
+      # GOSSIP
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.comarb.tribfed.gob.ar:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.comarb.tribfed.gob.ar:7051
+
+      # LEDGER
+      - CORE_LEDGER_STATE_TOTALQUERYLIMIT=100000
+
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: peer node start
+    ports:
+      - 9051:7051
+    volumes:
+        - /var/run/:/host/var/run/
+        - ${FABRIC_INSTANCE_PATH:?FABRIC_INSTANCE_PATH key no encontrada --> .env no localizado}/crypto-config:/etc/hyperledger/configtx
+        - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/comarb.tribfed.gob.ar/peers/peer0.comarb.tribfed.gob.ar/msp:/etc/hyperledger/peer/msp
+        - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/comarb.tribfed.gob.ar/peers/peer0.comarb.tribfed.gob.ar/tls:/etc/hyperledger/peer/tls
+        - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/comarb.tribfed.gob.ar/users:/etc/hyperledger/msp/users
+        - ${FABRIC_INSTANCE_PATH}/peer0.comarb.tribfed.gob.ar:/var/hyperledger/production
+    networks:
+      - tribfed
+    depends_on:
+      - ${ORDERER_NAME}
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "10"
+
+  peer1.comarb.tribfed.gob.ar:
+    mem_limit: 1g
+    container_name: peer1.comarb.tribfed.gob.ar
+    image: hyperledger/fabric-peer:${HLF_VERSION:?HLF_VERSION key no encontrada/no definida/.env no localizado}
+    environment:
+       #- CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.comarb.tribfed.gob.ar:7051
+       - NO_PROXY=localhost,127.0.0.1,${ORDERER_NAME},
+         peer0.afip.tribfed.gob.ar,peer1.afip.tribfed.gob.ar,
+         peer0.arba.tribfed.gob.ar,peer1.arba.tribfed.gob.ar,
+         peer0.comarb.tribfed.gob.ar,peer1.comarb.tribfed.gob.ar
+       - CORE_CHAINCODE_LOGGING_SHIM=INFO
+       - NPM_CONFIG_LOGLEVEL=INFO
+       - CORE_CHAINCODE_LOGGING_LEVEL=INFO
+       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+       - CORE_PEER_ID=peer1.comarb.tribfed.gob.ar
+       - CORE_PEER_ADDRESS=peer1.comarb.tribfed.gob.ar:7051
+       - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${ENVIRONMENT}_${FABRIC_NETWORK_NAME}
+       - CORE_VM_DOCKER_ATTACHSTDOUT=true
+       - CORE_PEER_LOCALMSPID=COMARB
+       - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/peer/msp
+#       # TLS
+       - CORE_PEER_TLS_ENABLED=${TLS_ENABLED:?TLS_ENABLED key no encontrada --> .env no localizado}
+       - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/peer/tls/server.crt
+       - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/peer/tls/server.key
+       - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/peer/tls/ca.crt
+
+       - CORE_PEER_TLS_CLIENTAUTHREQUIRED=${TLS_CLIENT_AUTH_REQUIRED?TLS_CLIENT_AUTH_REQUIRED key no encontrada/no definida/.env no localizado}
+       - CORE_PEER_TLS_CLIENTCERT_FILE=/etc/hyperledger/peer/tls/server.crt
+       - CORE_PEER_TLS_CLIENTKEY_FILE=/etc/hyperledger/peer/tls/server.key
+       - CORE_PEER_TLS_CLIENTROOTCAS_FILES=/etc/hyperledger/peer/tls/ca.crt
+
+      # LEDGER
+       - CORE_LEDGER_STATE_TOTALQUERYLIMIT=100000
+
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: peer node start
+    ports:
+       - 10051:7051
+    volumes:
+         - /var/run/:/host/var/run/
+         - ${FABRIC_INSTANCE_PATH:?FABRIC_INSTANCE_PATH key no encontrada --> .env no localizado}/crypto-config:/etc/hyperledger/configtx
+         - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/comarb.tribfed.gob.ar/peers/peer1.comarb.tribfed.gob.ar/msp:/etc/hyperledger/peer/msp
+         - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/comarb.tribfed.gob.ar/peers/peer1.comarb.tribfed.gob.ar/tls:/etc/hyperledger/peer/tls
+         - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/comarb.tribfed.gob.ar/users:/etc/hyperledger/msp/users
+         - ${FABRIC_INSTANCE_PATH}/peer1.comarb.tribfed.gob.ar:/var/hyperledger/production
+    networks:
+       - tribfed
+    depends_on:
+       - ${ORDERER_NAME}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "10"
+
+  peer0_comarb_cli:
+    mem_limit: 1g
+    container_name: peer0_comarb_cli
+    image: hyperledger/fabric-tools:${HLF_VERSION:?HLF_VERSION key no encontrada/no definida/.env no localizado}
+    tty: true
+    stdin_open: true
+    environment:
+      - NO_PROXY=localhost,127.0.0.1,${ORDERER_NAME},
+        peer0.afip.tribfed.gob.ar,peer1.afip.tribfed.gob.ar,
+        peer0.arba.tribfed.gob.ar,peer1.arba.tribfed.gob.ar,
+        peer0.comarb.tribfed.gob.ar,peer1.comarb.tribfed.gob.ar
+      - GOPATH=/opt/gopath
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - FABRIC_LOGGING_SPEC=${LOG_LEVEL:?LOG_LEVEL key no encontrada/no definida/.env no localizado}
+      - CORE_PEER_ID=cli
+      - CORE_PEER_ADDRESS=peer0.comarb.tribfed.gob.ar:7051
+      - CORE_PEER_LOCALMSPID=COMARB
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp
+      #TLS
+      - CORE_PEER_TLS_ENABLED=${TLS_ENABLED:?TLS_ENABLED key no encontrada --> .env no localizado}
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/peer/tls/ca.crt
+      - CORE_PEER_TLS_CLIENTAUTHREQUIRED=${TLS_CLIENT_AUTH_REQUIRED?TLS_CLIENT_AUTH_REQUIRED key no encontrada/no definida/.env no localizado}
+      - CORE_PEER_TLS_CLIENTKEY_FILE=/etc/hyperledger/tls/client.key
+      - CORE_PEER_TLS_CLIENTCERT_FILE=/etc/hyperledger/tls/client.crt
+
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: /bin/bash
+    volumes:
+      - /var/run:/host/var/run/
+      - ${FABRIC_INSTANCE_PATH:?FABRIC_INSTANCE_PATH key no encontrada --> .env no localizado}/crypto-config:/etc/hyperledger/configtx
+      - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/comarb.tribfed.gob.ar/users/Admin@comarb.tribfed.gob.ar/msp:/etc/hyperledger/msp
+      - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/comarb.tribfed.gob.ar/users/Admin@comarb.tribfed.gob.ar/tls:/etc/hyperledger/tls
+      - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/comarb.tribfed.gob.ar/peers/peer0.comarb.tribfed.gob.ar/tls:/etc/hyperledger/peer/tls
+      - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/afip.tribfed.gob.ar/tlsca:/etc/hyperledger/orderer/tls
+      - $CHAINCODE_DIR:/opt/gopath/src/$CHAINCODE_PACKAGE
+      - ${FABRIC_INSTANCE_PATH}/peer0_comarb_cli/signing:/signing
+    networks:
+      - tribfed
+    depends_on:
+      - ${ORDERER_NAME}
+      - peer0.comarb.tribfed.gob.ar
+
+  peer1_comarb_cli:
+    mem_limit: 1g
+    container_name: peer1_comarb_cli
+    image: hyperledger/fabric-tools:${HLF_VERSION:?HLF_VERSION key no encontrada/no definida/.env no localizado}
+    tty: true
+    stdin_open: true
+    environment:
+      - NO_PROXY=localhost,127.0.0.1,${ORDERER_NAME},
+        peer0.afip.tribfed.gob.ar,peer1.afip.tribfed.gob.ar,
+        peer0.arba.tribfed.gob.ar,peer1.arba.tribfed.gob.ar,
+        peer0.comarb.tribfed.gob.ar,peer1.comarb.tribfed.gob.ar
+      - GOPATH=/opt/gopath
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_PEER_ID=cli
+      - CORE_PEER_ADDRESS=peer1.comarb.tribfed.gob.ar:7051
+      - CORE_PEER_LOCALMSPID=COMARB
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp
+     #TLS
+      - CORE_PEER_TLS_ENABLED=${TLS_ENABLED:?TLS_ENABLED key no encontrada --> .env no localizado}
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/peer/tls/ca.crt
+      - CORE_PEER_TLS_CLIENTAUTHREQUIRED=${TLS_CLIENT_AUTH_REQUIRED?TLS_CLIENT_AUTH_REQUIRED key no encontrada/no definida/.env no localizado}
+      - CORE_PEER_TLS_CLIENTKEY_FILE=/etc/hyperledger/tls/client.key
+      - CORE_PEER_TLS_CLIENTCERT_FILE=/etc/hyperledger/tls/client.crt
+
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: /bin/bash
+    volumes:
+      - /var/run:/host/var/run/
+      - ${FABRIC_INSTANCE_PATH:?FABRIC_INSTANCE_PATH key no encontrada --> .env no localizado}/crypto-config:/etc/hyperledger/configtx
+      - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/comarb.tribfed.gob.ar/users/Admin@comarb.tribfed.gob.ar/msp:/etc/hyperledger/msp
+      - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/comarb.tribfed.gob.ar/users/Admin@comarb.tribfed.gob.ar/tls:/etc/hyperledger/tls
+      - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/comarb.tribfed.gob.ar/peers/peer1.comarb.tribfed.gob.ar/tls:/etc/hyperledger/peer/tls
+      - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/afip.tribfed.gob.ar/tlsca:/etc/hyperledger/orderer/tls
+      - $CHAINCODE_DIR:/opt/gopath/src/$CHAINCODE_PACKAGE
+    networks:
+      - tribfed
+    depends_on:
+      - ${ORDERER_NAME}
+      - peer1.comarb.tribfed.gob.ar
+
+################## ORG ARBA ##################
+  peer0.arba.tribfed.gob.ar:
+    mem_limit: 1g
+    container_name: peer0.arba.tribfed.gob.ar
+    image: hyperledger/fabric-peer:${HLF_VERSION:?HLF_VERSION key no encontrada/no definida/.env no localizado}
+    environment:
+      #- CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.arba.tribfed.gob.ar:7051
+      - NO_PROXY=localhost,127.0.0.1,${ORDERER_NAME},
+        peer0.afip.tribfed.gob.ar,peer1.afip.tribfed.gob.ar,
+        peer0.arba.tribfed.gob.ar,peer1.arba.tribfed.gob.ar,
+        peer0.comarb.tribfed.gob.ar,peer1.comarb.tribfed.gob.ar
+#      - CORE_CHAINCODE_LOGGING_SHIM=DEBUG
+#      - CORE_CHAINCODE_LOGGING_LEVEL=DEBUG
+#      - CORE_LOGGING_GRPC=DEBUG
+      - FABRIC_LOGGING_SPEC=${LOG_LEVEL:?LOG_LEVEL key no encontrada/no definida/.env no localizado}
+#      - NPM_CONFIG_LOGLEVEL=DEBUG
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_PEER_ID=peer0.arba.tribfed.gob.ar
+      - CORE_PEER_ADDRESS=peer0.arba.tribfed.gob.ar:7051
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${ENVIRONMENT}_${FABRIC_NETWORK_NAME}
+      - CORE_VM_DOCKER_ATTACHSTDOUT=true
+      - CORE_PEER_LOCALMSPID=ARBA
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/peer/msp
+
+      # TLS
+      - CORE_PEER_TLS_ENABLED=${TLS_ENABLED:?TLS_ENABLED key no encontrada --> .env no localizado}
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/peer/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/peer/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/peer/tls/ca.crt
+
+      - CORE_PEER_TLS_CLIENTAUTHREQUIRED=${TLS_CLIENT_AUTH_REQUIRED?TLS_CLIENT_AUTH_REQUIRED key no encontrada/no definida/.env no localizado}
+      - CORE_PEER_TLS_CLIENTCERT_FILE=/etc/hyperledger/peer/tls/server.crt
+      - CORE_PEER_TLS_CLIENTKEY_FILE=/etc/hyperledger/peer/tls/server.key
+      - CORE_PEER_TLS_CLIENTROOTCAS_FILES=/etc/hyperledger/peer/tls/ca.crt
+
+      # GOSSIP
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.arba.tribfed.gob.ar:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.arba.tribfed.gob.ar:7051
+
+      # LEDGER
+      - CORE_LEDGER_STATE_TOTALQUERYLIMIT=100000
+
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: peer node start
+    ports:
+      - 11051:7051
+    volumes:
+        - /var/run/:/host/var/run/
+        - ${FABRIC_INSTANCE_PATH:?FABRIC_INSTANCE_PATH key no encontrada --> .env no localizado}/crypto-config:/etc/hyperledger/configtx
+        - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/arba.tribfed.gob.ar/peers/peer0.arba.tribfed.gob.ar/msp:/etc/hyperledger/peer/msp
+        - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/arba.tribfed.gob.ar/peers/peer0.arba.tribfed.gob.ar/tls:/etc/hyperledger/peer/tls
+        - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/arba.tribfed.gob.ar/users:/etc/hyperledger/msp/users
+        - ${FABRIC_INSTANCE_PATH}/peer0.arba.tribfed.gob.ar:/var/hyperledger/production
+    networks:
+      - tribfed
+    depends_on:
+      - ${ORDERER_NAME}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "10"
+
+  peer1.arba.tribfed.gob.ar:
+    mem_limit: 1g
+    container_name: peer1.arba.tribfed.gob.ar
+    image: hyperledger/fabric-peer:${HLF_VERSION}
+    environment:
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.arba.tribfed.gob.ar:7051
+      - NO_PROXY=localhost,127.0.0.1,${ORDERER_NAME},
+        peer0.afip.tribfed.gob.ar,peer1.afip.tribfed.gob.ar,
+        peer0.arba.tribfed.gob.ar,peer1.arba.tribfed.gob.ar,
+        peer0.comarb.tribfed.gob.ar,peer1.comarb.tribfed.gob.ar
+      - CORE_CHAINCODE_LOGGING_SHIM=INFO
+      - NPM_CONFIG_LOGLEVEL=INFO
+      - CORE_CHAINCODE_LOGGING_LEVEL=INFO
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_PEER_ID=peer1.arba.tribfed.gob.ar
+      - CORE_PEER_ADDRESS=peer1.arba.tribfed.gob.ar:7051
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${ENVIRONMENT}_${FABRIC_NETWORK_NAME}
+      - CORE_PEER_LOCALMSPID=ARBA
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/peer/msp
+      # TLS
+      - CORE_PEER_TLS_ENABLED=${TLS_ENABLED:?TLS_ENABLED key no encontrada --> .env no localizado}
+      - CORE_PEER_TLS_CLIENTAUTHREQUIRED=false
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/peer/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/peer/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/peer/tls/ca.crt
+
+      # LEDGER
+      - CORE_LEDGER_STATE_TOTALQUERYLIMIT=100000
+
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: peer node start
+    ports:
+      - 12051:7051
+    volumes:
+        - /var/run/:/host/var/run/
+        - ${FABRIC_INSTANCE_PATH:?FABRIC_INSTANCE_PATH key no encontrada --> .env no localizado}/crypto-config:/etc/hyperledger/configtx
+        - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/arba.tribfed.gob.ar/peers/peer1.arba.tribfed.gob.ar/msp:/etc/hyperledger/peer/msp
+        - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/arba.tribfed.gob.ar/peers/peer1.arba.tribfed.gob.ar/tls:/etc/hyperledger/peer/tls
+        - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/arba.tribfed.gob.ar/users:/etc/hyperledger/msp/users
+        - ${FABRIC_INSTANCE_PATH}/peer1.arba.tribfed.gob.ar:/var/hyperledger/production
+    networks:
+      - tribfed
+    depends_on:
+      - ${ORDERER_NAME}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "10"
+        
+  peer0_arba_cli:
+    mem_limit: 1g
+    container_name: peer0_arba_cli
+    image: hyperledger/fabric-tools:${HLF_VERSION:?HLF_VERSION key no encontrada/no definida/.env no localizado}
+    tty: true
+    stdin_open: true
+    environment:
+      - NO_PROXY=localhost,127.0.0.1,${ORDERER_NAME},
+        peer0.afip.tribfed.gob.ar,peer1.afip.tribfed.gob.ar,
+        peer0.arba.tribfed.gob.ar,peer1.arba.tribfed.gob.ar,
+        peer0.comarb.tribfed.gob.ar,peer1.comarb.tribfed.gob.ar
+      - GOPATH=/opt/gopath
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - FABRIC_LOGGING_SPEC=${LOG_LEVEL:?LOG_LEVEL key no encontrada/no definida/.env no localizado}
+      - CORE_PEER_ID=cli
+      - CORE_PEER_ADDRESS=peer0.arba.tribfed.gob.ar:7051
+      - CORE_PEER_LOCALMSPID=ARBA
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp
+      # TLS
+      - CORE_PEER_TLS_ENABLED=${TLS_ENABLED:?TLS_ENABLED key no encontrada --> .env no localizado}
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/peer/tls/ca.crt
+      - CORE_PEER_TLS_CLIENTAUTHREQUIRED=${TLS_CLIENT_AUTH_REQUIRED?TLS_CLIENT_AUTH_REQUIRED key no encontrada/no definida/.env no localizado}
+      - CORE_PEER_TLS_CLIENTKEY_FILE=/etc/hyperledger/tls/client.key
+      - CORE_PEER_TLS_CLIENTCERT_FILE=/etc/hyperledger/tls/client.crt
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: /bin/bash
+    volumes:
+      - /var/run:/host/var/run/
+      - ${FABRIC_INSTANCE_PATH:?FABRIC_INSTANCE_PATH key no encontrada --> .env no localizado}/crypto-config:/etc/hyperledger/configtx
+      - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/arba.tribfed.gob.ar/users/Admin@arba.tribfed.gob.ar/msp:/etc/hyperledger/msp
+      - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/arba.tribfed.gob.ar/users/Admin@arba.tribfed.gob.ar/tls:/etc/hyperledger/tls
+      - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/arba.tribfed.gob.ar/peers/peer0.arba.tribfed.gob.ar/tls:/etc/hyperledger/peer/tls
+      - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/afip.tribfed.gob.ar/tlsca:/etc/hyperledger/orderer/tls
+      - $CHAINCODE_DIR:/opt/gopath/src/$CHAINCODE_PACKAGE
+      - ${FABRIC_INSTANCE_PATH}/peer0_arba_cli/signing:/signing
+    networks:
+      - tribfed
+    depends_on:
+      - ${ORDERER_NAME}
+      - peer0.arba.tribfed.gob.ar
+#
+  peer1_arba_cli:
+    mem_limit: 1g
+    container_name: peer1_arba_cli
+    image: hyperledger/fabric-tools:${HLF_VERSION?HLF_VERSION key no encontrada}
+    tty: true
+    stdin_open: true
+    environment:
+      - NO_PROXY=localhost,127.0.0.1,${ORDERER_NAME},
+        peer0.afip.tribfed.gob.ar,peer1.afip.tribfed.gob.ar,
+        peer0.arba.tribfed.gob.ar,peer1.arba.tribfed.gob.ar,
+        peer0.comarb.tribfed.gob.ar,peer1.comarb.tribfed.gob.ar
+      - GOPATH=/opt/gopath
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_PEER_ID=cli
+      - CORE_PEER_ADDRESS=peer1.arba.tribfed.gob.ar:7051
+      - CORE_PEER_LOCALMSPID=ARBA
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp
+      # TLS
+      - CORE_PEER_TLS_ENABLED=${TLS_ENABLED:?TLS_ENABLED key no encontrada --> .env no localizado}
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/peer/tls/ca.crt
+      - CORE_PEER_TLS_CLIENTAUTHREQUIRED=${TLS_CLIENT_AUTH_REQUIRED?TLS_CLIENT_AUTH_REQUIRED key no encontrada/no definida/.env no localizado}
+      - CORE_PEER_TLS_CLIENTKEY_FILE=/etc/hyperledger/tls/client.key
+      - CORE_PEER_TLS_CLIENTCERT_FILE=/etc/hyperledger/tls/client.crt
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: /bin/bash
+    volumes:
+      - /var/run:/host/var/run/
+      - ${FABRIC_INSTANCE_PATH:?FABRIC_INSTANCE_PATH key no encontrada --> .env no localizado}/crypto-config:/etc/hyperledger/configtx
+      - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/arba.tribfed.gob.ar/users/Admin@arba.tribfed.gob.ar/msp:/etc/hyperledger/msp
+      - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/arba.tribfed.gob.ar/users/Admin@arba.tribfed.gob.ar/tls:/etc/hyperledger/tls
+      - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/arba.tribfed.gob.ar/peers/peer1.arba.tribfed.gob.ar/tls:/etc/hyperledger/peer/tls
+      - ${FABRIC_INSTANCE_PATH}/crypto-config/peerOrganizations/afip.tribfed.gob.ar/tlsca:/etc/hyperledger/orderer/tls
+      - $CHAINCODE_DIR:/opt/gopath/src/$CHAINCODE_PACKAGE
+    networks:
+      - tribfed
+    depends_on:
+      - ${ORDERER_NAME}
+      - peer1.arba.tribfed.gob.ar

@@ -1,0 +1,73 @@
+OrdererOrgs:
+  - Name: {{ORDERER_NAME}}
+    Domain: {{ORDERER_DOMAIN_NAME}}.{{ENVIRONMENT}}.{{ORDERER_NETWORK_DOMAIN_NAME}}
+    CA:
+      Hostname: ca
+      Country: AR
+      Province: CABA
+      Locality: CABA
+      OrganizationalUnit: SDGSIT
+    Specs:
+      - Hostname: {{ORDERER_HOSTNAME}}
+    Template:
+      Count: 1
+    Users:
+      Count: 0
+
+PeerOrgs:
+
+  - Name: AFIP
+    Domain: {{BLOCKCHAIN_NETWORK_NAME}}.{{ENVIRONMENT}}.afip.{{ORGS_NETWORK_DOMAIN_NAME}}
+    CA:
+      Hostname: ca
+      Country: AR
+      Province: CABA
+      Locality: CABA
+      OrganizationalUnit: SDGSIT
+    EnableNodeOUs: true
+    Template:
+      Count: {{ORGS_DEFAULT_PEER_COUNT}}
+    Users:
+      Count: 4
+
+  - Name: COMARB
+    Domain: {{BLOCKCHAIN_NETWORK_NAME}}.{{ENVIRONMENT}}.comarb.{{ORGS_NETWORK_DOMAIN_NAME}}
+    CA:
+      Hostname: ca
+      Country: AR
+      Province: CABA
+      Locality: CABA
+      OrganizationalUnit: GTI
+    EnableNodeOUs: true
+    Template:
+      Count: {{ORGS_DEFAULT_PEER_COUNT}}
+    Users:
+      Count: 4
+
+  - Name: ARBA
+    Domain: {{BLOCKCHAIN_NETWORK_NAME}}.{{ENVIRONMENT}}.arba.{{ORGS_NETWORK_DOMAIN_NAME}}
+    CA:
+      Hostname: ca
+      Country: AR
+      Province: BUENOS AIRES
+      Locality: LA PLATA
+      OrganizationalUnit: GGTI
+    EnableNodeOUs: true
+    Template:
+      Count: {{ORGS_DEFAULT_PEER_COUNT}}
+    Users:
+      Count: 4
+
+  - Name: MULTIORGS
+    Domain: multiorgs.{{BLOCKCHAIN_NETWORK_NAME}}.{{ENVIRONMENT}}.afip.{{ORGS_NETWORK_DOMAIN_NAME}}
+    CA:
+      Hostname: ca
+      Country: AR
+      Province: CABA
+      Locality: CABA
+      OrganizationalUnit: SDGSIT
+    EnableNodeOUs: true
+    Template:
+      Count: 0
+    Users:
+      Count: 26

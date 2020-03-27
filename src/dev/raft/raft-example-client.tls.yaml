@@ -1,0 +1,135 @@
+name: "Network"
+version: "1.0"
+x-loggingLevel: trace
+
+client:
+  organization: AFIP
+  logging:
+    level: info
+  eventService:
+    timeout:
+      connection: 3s
+      registrationResponse: 3s
+
+channels:
+  padfedchannel:
+    orderers:
+      - orderer.afip.tribfed.gob.ar
+      - orderer.arba.tribfed.gob.ar
+      - orderer.comarb.tribfed.gob.ar
+#      - orderer1.afip.tribfed.gob.ar
+#      - orderer2.afip.tribfed.gob.ar
+    peers:
+      peer0.afip.tribfed.gob.ar:
+        endorsingPeer: true
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: true
+ #     peer1.afip.tribfed.gob.ar:
+ #       endorsingPeer: false
+ #       chaincodeQuery: false
+ #       ledgerQuery: true
+ #       eventSource: false
+      peer0.comarb.tribfed.gob.ar:
+        endorsingPeer: true
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: false
+ #     peer1.comarb.tribfed.gob.ar:
+ #       endorsingPeer: false
+ #       chaincodeQuery: false
+ #       ledgerQuery: true
+ #       eventSource: false
+      peer0.arba.tribfed.gob.ar:
+        endorsingPeer: true
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: false
+
+organizations:
+  AFIP:
+    mspid: AFIP
+    peers:
+      - peer0.afip.tribfed.gob.ar
+      #- peer1.afip.tribfed.gob.ar
+
+  COMARB:
+    mspid: COMARB
+    peers:
+      - peer0.comarb.tribfed.gob.ar
+      #- peer1.comarb.tribfed.gob.ar
+
+  ARBA:
+    mspid: ARBA
+    peers:
+      - peer0.arba.tribfed.gob.ar
+
+orderers:
+  orderer.afip.tribfed.gob.ar:
+    url: grpcs://localhost:7050
+    grpcOptions:
+      hostnameOverride: orderer.afip.tribfed.gob.ar
+#      ssl-target-name-override: orderer.tribfed.gob.ar
+    tlsCACerts:
+      path: src/test/resources/tls/local/orderer.tribfed.gob.ar/afip.ca.crt
+
+#  orderer1.afip.tribfed.gob.ar:
+#    url: grpcs://localhost:17050
+#    grpcOptions:
+#      hostnameOverride: orderer1.afip.tribfed.gob.ar
+#    tlsCACerts:
+#      path: src/test/resources/tls/local/orderer1.tribfed.gob.ar/ca.crt
+
+#  orderer2.afip.tribfed.gob.ar:
+#    url: grpcs://localhost:27050
+#    grpcOptions:
+#      hostnameOverride: orderer2.afip.tribfed.gob.ar
+#    tlsCACerts:
+#      path: src/test/resources/tls/local/orderer2.tribfed.gob.ar/ca.crt
+
+  orderer.arba.tribfed.gob.ar:
+    url: grpcs://localhost:27050
+    grpcOptions:
+      hostnameOverride: orderer.arba.tribfed.gob.ar
+    tlsCACerts:
+      path: src/test/resources/tls/local/orderer.tribfed.gob.ar/arba.ca.crt
+
+  orderer.comarb.tribfed.gob.ar:
+    url: grpcs://localhost:17050
+    grpcOptions:
+      hostnameOverride: orderer.comarb.tribfed.gob.ar
+    tlsCACerts:
+      path: src/test/resources/tls/local/orderer.tribfed.gob.ar/comarb.ca.crt
+
+
+peers:
+  peer0.afip.tribfed.gob.ar:
+    url: grpcs://localhost:7051
+    grpcOptions:
+      hostnameOverride: peer0.afip.tribfed.gob.ar
+#      ssl-target-name-override: peer0.afip.tribfed.gob.ar
+    tlsCACerts:
+      path: src/test/resources/tls/local/peer0.afip.tribfed.gob.ar/ca.crt
+
+
+#  peer1.afip.tribfed.gob.ar:
+#    url: grpc://localhost:8051
+
+  peer0.comarb.tribfed.gob.ar:
+    url: grpcs://localhost:9051
+    grpcOptions:
+      hostnameOverride: peer0.comarb.tribfed.gob.ar
+#      ssl-target-name-override: peer0.comarb.tribfed.gob.ar
+    tlsCACerts:
+      path: src/test/resources/tls/local/peer0.comarb.tribfed.gob.ar/ca.crt
+
+
+#  peer1.comarb.tribfed.gob.ar:
+#    url: grpc://localhost:10051
+
+  peer0.arba.tribfed.gob.ar:
+    url: grpcs://localhost:11051
+    grpcOptions:
+      hostnameOverride: peer0.arba.tribfed.gob.ar
+    tlsCACerts:
+      path: src/test/resources/tls/local/peer0.arba.tribfed.gob.ar/ca.crt
