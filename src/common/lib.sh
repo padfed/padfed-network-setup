@@ -1,10 +1,15 @@
 #!/bin/bash
 
-function echo_red()   { echo -e "\033[1;31m$@\033[0m"; }
+readonly BOLD=$(tput bold)
+readonly GREEN=$(tput setaf 2)
+readonly RED=$(tput setaf 1)
+readonly NORMAL=$(tput sgr0)
 
-function echo_green() { echo -e "\033[1;32m$@\033[0m"; } 
+function echo_red()   { echo -e "$RED$@$NORMAL"; }
 
-function echo_blue() { echo -e "\033[1;34m$@\033[0m"; } 
+function echo_green() { echo -e "$GREEN$@$NORMAL"; }
+
+function echo_blue()  { echo -e "\033[1;34m$@$NORMAL"; }
 
 function docker() {
    [[ -v DOCKERDEBUG ]] && echo docker "$@"
@@ -12,6 +17,8 @@ function docker() {
 }
 
 function echo_sep() {
+   [[ -v DEBUG ]] && return 0
+
    for i in {1..80}; do echo -n "-"; done
    echo
    if [[ $# -eq 1 ]]; then
@@ -20,6 +27,8 @@ function echo_sep() {
 }
 
 function echo_bold_sep() {
+   [[ -v DEBUG ]] && return 0
+
    for i in {1..80}; do echo -n "#"; done
    echo
 }
@@ -48,7 +57,7 @@ local FILES=$(ls -A "$1")
 
 function check_exe() {
 local command="$(command -v $1)"
-[[ -x $command ]] && { echo "exe checked [$command]"; } || { echo_red "ERROR: Exe ["$1"] not found !!!"; exit 1; } 
+[[ -x $command ]] && { echo "exe checked [$command]"; } || { echo_red "ERROR: Exe ["$1"] not found !!!"; exit 1; }
 }
 
 function check_number_of_params() {
@@ -105,13 +114,13 @@ function askProceed() {
 }
 
 function echo_running() {
-    readonly THIS=$(basename "$0") 
+    readonly THIS=$(basename "$0")
     echo_bold_sep
     echo_blue "[$THIS] running ..."
 }
 
 function echo_success() {
-#   echo_sep 
+#   echo_sep
     echo_green "[${THIS:-}] ${1:-} exit OK !!!"
     echo_bold_sep
 }
@@ -121,7 +130,7 @@ function is_x509_crt() {
 }
 
 check_x509_crt() {
-is_x509_crt "$1" || { echo_red "ERROR: File ["$1"] is not a x509 certificate !!!"; exit 1; } 
+is_x509_crt "$1" || { echo_red "ERROR: File ["$1"] is not a x509 certificate !!!"; exit 1; }
 }
 
 function is_crl() {
@@ -129,7 +138,7 @@ function is_crl() {
 }
 
 check_crl() {
-is_crl "$1" || { echo_red "ERROR: File ["$1"] is not a crl certificate !!!"; exit 1; } 
+is_crl "$1" || { echo_red "ERROR: File ["$1"] is not a crl certificate !!!"; exit 1; }
 }
 
 function jq_check_value() {
