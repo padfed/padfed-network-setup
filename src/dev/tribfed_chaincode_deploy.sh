@@ -73,9 +73,25 @@ fi
 
 echo_sep "deploying $CHAINCODE_NAME version $NEW_VERSION ..."
 
-for ORG in ${ORGS_WITH_PEERS}; do
-   docker exec "peer0_${ORG,,}_cli" peer chaincode install $TLS_PARAMETERS -n "$CHAINCODE_NAME" -v "$NEW_VERSION" -p "$CHAINCODE_PACKAGE"
+readonly ZERO_PEER_CLIS=$(docker ps --format \{\{.Names\}\} | grep "^peer0_" | grep "_cli$")
+
+if [[ -z $ZERO_PEER_CLIS ]]; then
+  echo "no peer0_*_cli was found"
+  exit 1
+fi
+
+echo "ZERO PEER CLIS [$ZERO_PEER_CLIS]"
+
+# "AND('ORG1.peer','ORG2.peer','ORG3.peer')"
+ENDORSEMENT_POLICY="AND("
+for cli in $ZERO_PEER_CLIS; do
+   docker exec "$cli" peer chaincode install -n "$CHAINCODE_NAME" -v "$NEW_VERSION" -p "$CHAINCODE_PACKAGE"
+   org=${cli#peer0_}
+   org=${org%_cli}
+   ENDORSEMENT_POLICY="${ENDORSEMENT_POLICY}'${org^^}.peer',"
 done
+ENDORSEMENT_POLICY="${ENDORSEMENT_POLICY%,})"
+echo "ENDORSEMENT_POLICY [$ENDORSEMENT_POLICY]"
 
 echo_sep "activating $CHAINCODE_NAME version $NEW_VERSION command $COMMAND ..."
 docker exec peer0_afip_cli peer chaincode "$COMMAND" $TLS_PARAMETERS -o "$ORDERER" -C "$CHANNEL_NAME" -n "$CHAINCODE_NAME" -v "$NEW_VERSION" -c '{"Args":[""]}' -P "$ENDORSEMENT_POLICY"

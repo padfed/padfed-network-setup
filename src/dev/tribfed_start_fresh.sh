@@ -61,10 +61,9 @@ echo_sep "Levantando y joineando al channel los peers de la nueva org $NEWORG ..
 ./neworg_start.sh $NEWORG
 
 echo_sep "Deployando chaincode por segunda vez incluyendo a la nueva org $NEWORG ..."
-ORGS_WITH_PEERS_EXTENDED="$ORGS_WITH_PEERS $NEWORG"
-env ORGS_WITH_PEERS="$ORGS_WITH_PEERS_EXTENDED" ./tribfed_chaincode_deploy.sh
+./tribfed_chaincode_deploy.sh
 
 echo_sep "Ejecutando chaincode ..."
-env ORGS_WITH_PEERS="$ORGS_WITH_PEERS_EXTENDED" ./tribfed_chaincode_test_1.sh
+./tribfed_chaincode_test_1.sh
 
 echo_success "END 2 END: START FRESH + ADD ORG + CHAINCODE EXECUTE"
