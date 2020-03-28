@@ -172,7 +172,7 @@ Application: &ApplicationDefaults
 #        - *COMARB
 #        - *ARBA
 #        - *MORGS
-    
+
     # Policies defines the set of policies at this level of the config tree
     # For Application policies, their canonical path is
     #   /Channel/Application/<PolicyName>
@@ -183,15 +183,20 @@ Application: &ApplicationDefaults
         Writers:
             Type: ImplicitMeta
             Rule: "ANY Writers"
-        # Configuracion de /Channel/Application/Admins 
-        # para que el agregado de una Org deba ser firmado por la mayoria de Admins  
-        # Ej: si el channel tiene 4 Orgs debe ser firmado por 3 
+        # Configuracion de /Channel/Application/Admins
+        # para que el agregado de una Org deba ser firmado por los menos por 2 orgs
         Admins:
-            Type: ImplicitMeta
-            Rule: "MAJORITY Admins"
-        #Configuracion de /Channel/Application/Admins 
-        #para que el agregado de una Org deba ser firmado exclusivamente por AFIP  
-        #Admins:
+            Type: Signature
+            Rule: "OutOf(2,'AFIP.admin','COMARB.admin','ARBA.admin','CBA.admin')"
+        # Configuracion de /Channel/Application/Admins
+        # para que el agregado de una Org deba ser firmado por la mayoria
+        # Ej: si el channel tiene 4 Orgs debe ser firmado por 3
+        # Admins:
+        #     Type: ImplicitMeta
+        #     Rule: "MAJORITY Admins"
+        # Configuracion de /Channel/Application/Admins
+        # para que el agregado de una Org deba ser firmado exclusivamente por AFIP
+        # Admins:
         #     Type: Signature
         #     Rule: "AND('AFIP.admin')"
 
@@ -357,7 +362,7 @@ Profiles:
                     - *AFIP
                     - *COMARB
                     - *ARBA
-                    - *MORGS                  
+                    - *MORGS
 
     SoloOrdererGenesis:
         Capabilities:
