@@ -14,12 +14,17 @@ docker() {
 }
 
 case "$SUBCOMMAND" in
-query)  readonly WAIT_FOR_EVENT="" ;;
-invoke) readonly WAIT_FOR_EVENT="--waitForEvent" ;;
+query)  readonly WAIT_FOR_EVENT=""
+        readonly LOGGING_LEVEL="INFO"
+        ;;
+invoke) readonly WAIT_FOR_EVENT="--waitForEvent"
+        readonly LOGGING_LEVEL="DEBUG"
+        ;;
 *) echo "Usage: $0 [invoke|query] {json-args}"
    exit 1
 esac
 
+echo "PEER_PORT [${PEER_PORT:=7051}]"
 readonly ZERO_PEERS=$(docker ps --format \{\{.Names\}\} --filter expose="$PEER_PORT" | grep peer0)
 
 if [[ -z $ZERO_PEERS ]]; then
@@ -58,5 +63,5 @@ docker exec peer0_afip_cli peer chaincode "$SUBCOMMAND" \
          -C "$CHANNEL_NAME" \
          -n "$CHAINCODE_NAME" \
          "$WAIT_FOR_EVENT" \
-         --logging-level info \
+         --logging-level "$LOGGING_LEVEL" \
          -c "$ARGS"
