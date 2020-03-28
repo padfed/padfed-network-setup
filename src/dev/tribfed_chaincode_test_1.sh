@@ -29,11 +29,7 @@ query() {
     cc query "$@"
 }
 
-echo '#################################################### (CHAINCODE DELETE PERSONA)'
-invoke delPersona 20104249729 || true
-
-echo '#################################################### (CHAINCODE PUT PERSONA FISICA)'
-P='{
+readonly PF='{
    "id":20104249729,
    "persona":{
       "id":20104249729,
@@ -255,10 +251,8 @@ P='{
       }
    }
 }'
-invoke PutPersona "$P"
 
-echo '#################################################### (CHAINCODE PUT PERSONA JURIDICA)'
-P='{
+readonly PJ='{
    "id":30444444440,
    "persona":{
       "id":30444444440,
@@ -382,10 +376,18 @@ P='{
       }
    }
 }'
-invoke PutPersona "$P"
 
-echo '#################################################### (CHAINCODE QUERY)'
-query getPersona 20104249729
+for f in GetVersion GetFunctions; do
+   echo "#################################################### (CHAINCODE $f)"
+   query "$f"
+done
 
-echo '#################################################### (CHAINCODE VERSION)'
-query GetVersion
+for p in "$PF" "$PJ"; do
+    id=$(echo "$p" | jq .id)
+    echo "#################################################### (CHAINCODE DelPersona $id)"
+    invoke DelPersona "$id" || true
+    echo "#################################################### (CHAINCODE PutPersona $id)"
+    invoke PutPersona "$p"
+    echo "#################################################### (CHAINCODE GetPersona $id)"
+    query GetPersona "$id"
+done
