@@ -34,7 +34,7 @@ sudo rm -rf "$FABRIC_INSTANCE_PATH"
 sudo mkdir -p "$CHAINCODE_DIR"
 sudo chmod -R 777 "$CHAINCODE_DIR"
 
-echo_sep "Generando material criptografico, orderer block, primera tx del channel y txs para anchors ..."
+echo_sep "Generando material criptografico, genesis, primera tx del channel y txs para anchors ..."
 ./tribfed_setup.sh
 
 echo_sep "Levantando los servicios ..."
@@ -45,6 +45,9 @@ echo_sep "Creando el channel y joineando peers ..."
 
 echo_sep "Deployando chaincode ..."
 ./tribfed_chaincode_deploy.sh
+
+echo_sep "Ejecutando chaincode ..."
+./tribfed_chaincode_test_1.sh
 
 if [[ $ADD_ORG == no ]]; then
    echo_success "END 2 END: START FRESH"
