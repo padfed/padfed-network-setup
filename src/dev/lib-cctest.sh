@@ -70,28 +70,35 @@ cc() {
     fi
     echo "$GREEN===> $BOLD$SUBCOMMAND$NORMAL $PRINTFUNCTION $PRINTARGS" > /dev/stderr
 
-    local PEER_CLI_TLS_WITH_ORG=""
-    if [[ "$TLS_ENABLED" == "true" ]]; then
-        PEER_CLI_TLS_WITH_ORDERER="--tls --cafile /etc/hyperledger/orderer/tls/tlsca.afip.tribfed.gob.ar-cert.pem"
-        ORGS=AFIP
-        [[ $SUBCOMMAND == invoke ]] && ORGS=$ORGS_WITH_PEERS
-        for ORG in $ORGS; do
-            PEER_CLI_TLS_WITH_ORG="$PEER_CLI_TLS_WITH_ORG --peerAddresses peer0.${ORG,,}.tribfed.gob.ar:7051 --tlsRootCertFiles /etc/hyperledger/tls_root_cas/tlsca.${ORG,,}.tribfed.gob.ar-cert.pem"
-        done
-        if [[ "$TLS_CLIENT_AUTH_REQUIRED" == "true" ]]; then
-            PEER_CLI_TLS_WITH_ORDERER="$PEER_CLI_TLS_WITH_ORDERER --clientauth --keyfile /etc/hyperledger/tls/client.key --certfile /etc/hyperledger/tls/client.crt"
-        fi
-    fi
+    local WAIT_FOR_EVENT=""
+    local PEERS_PARAMS=""
+    local ORDERER_PARAMS=""
 
-    case $SUBCOMMAND in
+    case "$SUBCOMMAND" in
         invoke)
             WAIT_FOR_EVENT="--waitForEvent"
+
+            ORDERER_PARAMS="-o $ORDERER"
+            if [[ "$TLS_ENABLED" == true ]]; then
+                ORDERER_PARAMS="--tls --cafile /etc/hyperledger/orderer/tls/tlsca.afip.tribfed.gob.ar-cert.pem"
+                if [[ $TLS_CLIENT_AUTH_REQUIRED == true ]]; then
+                    ORDERER_PARAMS="$ORDERER_PARAMS --clientauth"
+                    ORDERER_PARAMS="$ORDERER_PARAMS --keyfile /etc/hyperledger/admin/tls/client.key"
+                    ORDERER_PARAMS="$ORDERER_PARAMS --certfile /etc/hyperledger/admin/tls/client.crt"
+                fi
+            fi
+
+            for org in $ORGS_WITH_PEERS; do
+                PEERS_PARAMS="$PEERS_PARAMS --peerAddresses peer0.${org,,}.tribfed.gob.ar:7051"
+                if [[ $TLS_CLIENT_AUTH_REQUIRED == true ]]; then
+                    PEERS_PARAMS="$PEERS_PARAMS --tlsRootCertFiles /etc/hyperledger/tls_root_cas/tlsca.${org,,}.tribfed.gob.ar-cert.pem"
+                fi
+            done
             ;;
         query)
-            WAIT_FOR_EVENT=""
             ;;
         *)
-            echo "unknown command" > /dev/stderr
+            echo "Error [$SUBCOMMAND] unknown command" > /dev/stderr
             exit 1
     esac
 
@@ -100,10 +107,9 @@ cc() {
     set +e
     OUTPUT="$(docker exec $ENV peer0_afip_cli peer chaincode \
                 $SUBCOMMAND \
-                $PEER_CLI_TLS_WITH_ORDERER \
-                $PEER_CLI_TLS_WITH_ORG \
+                $PEERS_PARAMS \
+                $ORDERER_PARAMS \
                 $WAIT_FOR_EVENT \
-                -o $ORDERER \
                 -C $CHANNEL_NAME \
                 -n $CHAINCODE_NAME \
                 -c "$ARGS" 2>&1)"
