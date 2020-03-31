@@ -72,11 +72,11 @@ echo "NEWORG (from p1) [$NEWORG]"
 echo "CHANNEL_NAME [$CHANNEL_NAME]"
 echo "PEER_PORT [${PEER_PORT:=7051}]"
 
-readonly TMP_PATH="${BASE}/${NEWORG}_setup_tmp"
+readonly TMP_PATH="${BASE}/tmp/$$.${NEWORG}.setup"
 sudo rm -Rf "$TMP_PATH"
-mkdir "$TMP_PATH"
+mkdir -p "$TMP_PATH"
 
-echo "Generating ${NEWORG} crypto material ..."
+echo "Generating $NEWORG crypto material ..."
 
 make_crypto_config_yaml "$TMP_PATH/crypto-config.yaml"
 
@@ -130,9 +130,9 @@ check_file "$UPDATE_IN_ENVELOPE_PB"
 # so we simply need to issue the peer channel signconfigtx command:
 
 readonly CLI=peer0_afip_cli
-readonly CLI_SIGNING_PATH="${FABRIC_INSTANCE_PATH}/${CLI}/signing" && check_dir "$CLI_SIGNING_PATH"
+readonly CLI_SIGNING_PATH="$FABRIC_INSTANCE_PATH/${CLI}/signing" && check_dir "$CLI_SIGNING_PATH"
 
-cp "${UPDATE_IN_ENVELOPE_PB}" "${UPDATE_IN_ENVELOPE_PB}.unsigned"
+cp "$UPDATE_IN_ENVELOPE_PB" "$UPDATE_IN_ENVELOPE_PB.unsigned"
 SIGNED_FILENAME="$UPDATE_IN_ENVELOPE_PB"
 
 for ORG in $ORGS_WITH_PEERS; do
@@ -171,16 +171,7 @@ done
 
 echo_sep "Updating channel, adding $NEWORG ..."
 
-TLS_PARAMETERS=""
-if [[ $TLS_ENABLED == true ]]; then
-    TLS_PARAMETERS="--tls --cafile /etc/hyperledger/orderer/tls/tlsca.afip.tribfed.gob.ar-cert.pem"
-
-    if [[ $TLS_CLIENT_AUTH_REQUIRED == true ]]; then
-       TLS_PARAMETERS="$TLS_PARAMETERS --clientauth"
-       TLS_PARAMETERS="$TLS_PARAMETERS --keyfile /etc/hyperledger/tls/client.key"
-       TLS_PARAMETERS="$TLS_PARAMETERS --certfile /etc/hyperledger/tls/client.crt"
-    fi
-fi
+TLS_PARAMETERS=$( get_tls_parameters )
 
 docker exec "$CLI" rm -f /signing/*
 
