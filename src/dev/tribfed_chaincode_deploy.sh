@@ -39,16 +39,7 @@ else
    echo "main.go in [$(realpath "$CHAINCODE_DIR")]"
 fi
 
-TLS_PARAMETERS=""
-if [[ $TLS_ENABLED == true ]]; then
-    TLS_PARAMETERS="--tls --cafile /etc/hyperledger/orderer/tls/tlsca.afip.tribfed.gob.ar-cert.pem"
-
-    if [[ $TLS_CLIENT_AUTH_REQUIRED == true ]]; then
-       TLS_PARAMETERS="$TLS_PARAMETERS --clientauth"
-       TLS_PARAMETERS="$TLS_PARAMETERS --keyfile /etc/hyperledger/tls/client.key"
-       TLS_PARAMETERS="$TLS_PARAMETERS --certfile /etc/hyperledger/tls/client.crt"
-    fi
-fi
+readonly TLS_PARAMETERS=$( get_tls_parameters )
 
 echo_sep "determining chaincode version ..."
 docker exec peer0_afip_cli peer chaincode list -C "$CHANNEL_NAME" --instantiated
