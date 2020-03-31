@@ -281,13 +281,13 @@ services:
       - CORE_PEER_ID=cli
       - CORE_PEER_ADDRESS=peer0.afip.tribfed.gob.ar:7051
       - CORE_PEER_LOCALMSPID=AFIP
-      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/admin/msp
       # TLS
       - CORE_PEER_TLS_ENABLED=${TLS_ENABLED:?TLS_ENABLED key no encontrada --> .env no localizado}
       - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/peer/tls/ca.crt
       - CORE_PEER_TLS_CLIENTAUTHREQUIRED=${TLS_CLIENT_AUTH_REQUIRED?TLS_CLIENT_AUTH_REQUIRED key no encontrada/no definida/.env no localizado}
-      - CORE_PEER_TLS_CLIENTKEY_FILE=/etc/hyperledger/tls/client.key
-      - CORE_PEER_TLS_CLIENTCERT_FILE=/etc/hyperledger/tls/client.crt
+      - CORE_PEER_TLS_CLIENTKEY_FILE=/etc/hyperledger/admin/tls/client.key
+      - CORE_PEER_TLS_CLIENTCERT_FILE=/etc/hyperledger/admin/tls/client.crt
 
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
     command: /bin/bash
@@ -327,13 +327,13 @@ services:
       - CORE_PEER_ID=cli
       - CORE_PEER_ADDRESS=peer0.afip.tribfed.gob.ar:7051
       - CORE_PEER_LOCALMSPID=AFIP
-      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/admin/msp
       # TLS
       - CORE_PEER_TLS_ENABLED=${TLS_ENABLED:?TLS_ENABLED key no encontrada --> .env no localizado}
       - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/peer/tls/ca.crt
       - CORE_PEER_TLS_CLIENTAUTHREQUIRED=${TLS_CLIENT_AUTH_REQUIRED?TLS_CLIENT_AUTH_REQUIRED key no encontrada/no definida/.env no localizado}
-      - CORE_PEER_TLS_CLIENTKEY_FILE=/etc/hyperledger/tls/client.key
-      - CORE_PEER_TLS_CLIENTCERT_FILE=/etc/hyperledger/tls/client.crt
+      - CORE_PEER_TLS_CLIENTKEY_FILE=/etc/hyperledger/admin/tls/client.key
+      - CORE_PEER_TLS_CLIENTCERT_FILE=/etc/hyperledger/admin/tls/client.crt
 
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
     command: /bin/bash
@@ -402,13 +402,13 @@ services:
       - CORE_PEER_ID=cli
       - CORE_PEER_ADDRESS=peer1.afip.tribfed.gob.ar:7051
       - CORE_PEER_LOCALMSPID=AFIP
-      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/admin/msp
       # TLS
       - CORE_PEER_TLS_ENABLED=${TLS_ENABLED:?TLS_ENABLED key no encontrada --> .env no localizado}
       - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/peer/tls/ca.crt
       - CORE_PEER_TLS_CLIENTAUTHREQUIRED=${TLS_CLIENT_AUTH_REQUIRED?TLS_CLIENT_AUTH_REQUIRED key no encontrada/no definida/.env no localizado}
-      - CORE_PEER_TLS_CLIENTKEY_FILE=/etc/hyperledger/tls/client.key
-      - CORE_PEER_TLS_CLIENTCERT_FILE=/etc/hyperledger/tls/client.crt
+      - CORE_PEER_TLS_CLIENTKEY_FILE=/etc/hyperledger/admin/tls/client.key
+      - CORE_PEER_TLS_CLIENTCERT_FILE=/etc/hyperledger/admin/tls/client.crt
 
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
     command: /bin/bash
@@ -563,13 +563,13 @@ services:
       - CORE_PEER_ID=cli
       - CORE_PEER_ADDRESS=peer0.comarb.tribfed.gob.ar:7051
       - CORE_PEER_LOCALMSPID=COMARB
-      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/admin/msp
       #TLS
       - CORE_PEER_TLS_ENABLED=${TLS_ENABLED:?TLS_ENABLED key no encontrada --> .env no localizado}
       - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/peer/tls/ca.crt
       - CORE_PEER_TLS_CLIENTAUTHREQUIRED=${TLS_CLIENT_AUTH_REQUIRED?TLS_CLIENT_AUTH_REQUIRED key no encontrada/no definida/.env no localizado}
-      - CORE_PEER_TLS_CLIENTKEY_FILE=/etc/hyperledger/tls/client.key
-      - CORE_PEER_TLS_CLIENTCERT_FILE=/etc/hyperledger/tls/client.crt
+      - CORE_PEER_TLS_CLIENTKEY_FILE=/etc/hyperledger/admin/tls/client.key
+      - CORE_PEER_TLS_CLIENTCERT_FILE=/etc/hyperledger/admin/tls/client.crt
 
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
     command: /bin/bash
@@ -604,13 +604,13 @@ services:
       - CORE_PEER_ID=cli
       - CORE_PEER_ADDRESS=peer1.comarb.tribfed.gob.ar:7051
       - CORE_PEER_LOCALMSPID=COMARB
-      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/admin/msp
      #TLS
       - CORE_PEER_TLS_ENABLED=${TLS_ENABLED:?TLS_ENABLED key no encontrada --> .env no localizado}
       - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/peer/tls/ca.crt
       - CORE_PEER_TLS_CLIENTAUTHREQUIRED=${TLS_CLIENT_AUTH_REQUIRED?TLS_CLIENT_AUTH_REQUIRED key no encontrada/no definida/.env no localizado}
-      - CORE_PEER_TLS_CLIENTKEY_FILE=/etc/hyperledger/tls/client.key
-      - CORE_PEER_TLS_CLIENTCERT_FILE=/etc/hyperledger/tls/client.crt
+      - CORE_PEER_TLS_CLIENTKEY_FILE=/etc/hyperledger/admin/tls/client.key
+      - CORE_PEER_TLS_CLIENTCERT_FILE=/etc/hyperledger/admin/tls/client.crt
 
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
     command: /bin/bash
@@ -759,13 +759,13 @@ services:
       - CORE_PEER_ID=cli
       - CORE_PEER_ADDRESS=peer0.arba.tribfed.gob.ar:7051
       - CORE_PEER_LOCALMSPID=ARBA
-      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/admin/msp
       # TLS
       - CORE_PEER_TLS_ENABLED=${TLS_ENABLED:?TLS_ENABLED key no encontrada --> .env no localizado}
       - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/peer/tls/ca.crt
       - CORE_PEER_TLS_CLIENTAUTHREQUIRED=${TLS_CLIENT_AUTH_REQUIRED?TLS_CLIENT_AUTH_REQUIRED key no encontrada/no definida/.env no localizado}
-      - CORE_PEER_TLS_CLIENTKEY_FILE=/etc/hyperledger/tls/client.key
-      - CORE_PEER_TLS_CLIENTCERT_FILE=/etc/hyperledger/tls/client.crt
+      - CORE_PEER_TLS_CLIENTKEY_FILE=/etc/hyperledger/admin/tls/client.key
+      - CORE_PEER_TLS_CLIENTCERT_FILE=/etc/hyperledger/admin/tls/client.crt
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
     command: /bin/bash
     volumes:
@@ -799,13 +799,13 @@ services:
       - CORE_PEER_ID=cli
       - CORE_PEER_ADDRESS=peer1.arba.tribfed.gob.ar:7051
       - CORE_PEER_LOCALMSPID=ARBA
-      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/admin/msp
       # TLS
       - CORE_PEER_TLS_ENABLED=${TLS_ENABLED:?TLS_ENABLED key no encontrada --> .env no localizado}
       - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/peer/tls/ca.crt
       - CORE_PEER_TLS_CLIENTAUTHREQUIRED=${TLS_CLIENT_AUTH_REQUIRED?TLS_CLIENT_AUTH_REQUIRED key no encontrada/no definida/.env no localizado}
-      - CORE_PEER_TLS_CLIENTKEY_FILE=/etc/hyperledger/tls/client.key
-      - CORE_PEER_TLS_CLIENTCERT_FILE=/etc/hyperledger/tls/client.crt
+      - CORE_PEER_TLS_CLIENTKEY_FILE=/etc/hyperledger/admin/tls/client.key
+      - CORE_PEER_TLS_CLIENTCERT_FILE=/etc/hyperledger/admin/tls/client.crt
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
     command: /bin/bash
     volumes:
