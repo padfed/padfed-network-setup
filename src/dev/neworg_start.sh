@@ -18,8 +18,8 @@ function usage() {
 }
 
 function fetch() {
-   echo_sep "$CLI peer channel fetch $1 into $2 ..."
    docker exec "$CLI" peer channel fetch "$1" $TLS_PARAMETERS -o "$ORDERER" -c "$CHANNEL_NAME" "$2"
+   docker exec "$CLI" ls -la "$2"
 }
 
 if [[ $# -ne 1 ]]; then
@@ -33,34 +33,43 @@ NEWORG="${1^^}"
 
 readonly DOCKER_FILE="$BASE/${NEWORG}.docker-compose.yml" && check_file "$DOCKER_FILE"
 
+SERVICES=""
+for peer in $PEERS; do
+    SERVICES="$SERVICES ${peer}.${NEWORG,,}.$NETWORK_DOMAIN"
+    LAST_CLI="${peer}_${NEWORG,,}_cli"
+    SERVICES="$SERVICES $LAST_CLI"
+done
+
 docker-compose -f "$DOCKER_FILE" down
-docker-compose -f "$DOCKER_FILE" up -d
+
+echo "SERVICES [$SERVICES]"
+docker-compose -f "$DOCKER_FILE" up -d $SERVICES
 
 # wait for Hyperledger Fabric to start
 echo "Waiting for fabric to complete start up..."
-while ! (docker exec "peer0_${NEWORG,,}_cli" peer node status  | grep "STARTED")
+while ! (docker exec "$LAST_CLI" peer node status  | grep "STARTED")
 do
     echo "..."
     sleep 1
 done
 
-TLS_PARAMETERS=""
-if [[ $TLS_ENABLED == true ]]; then
-    TLS_PARAMETERS="--tls --cafile /etc/hyperledger/orderer/tls/tlsca.afip.tribfed.gob.ar-cert.pem"
+readonly TLS_PARAMETERS=$( get_tls_parameters )
 
-    if [[ $TLS_CLIENT_AUTH_REQUIRED == true ]]; then
-       TLS_PARAMETERS="$TLS_PARAMETERS --clientauth"
-       TLS_PARAMETERS="$TLS_PARAMETERS --keyfile /etc/hyperledger/tls/client.key"
-       TLS_PARAMETERS="$TLS_PARAMETERS --certfile /etc/hyperledger/tls/client.crt"
-    fi
-fi
+readonly TMP_PATH="${BASE}/tmp/$$.${NEWORG}.start"
+sudo rm -Rf "$TMP_PATH"
+mkdir -p "$TMP_PATH"
 
-readonly CONFIG_BLOCK_0="${CHANNEL_NAME}_config_block_zero.block"
-readonly CONFIG_BLOCK="${CHANNEL_NAME}_config_block.block"
-readonly SET_ANCHOR_PEER_TX="${NEWORG}_set_anchor_peer.tx"
+readonly ZERO_BLOCK="$$.${CHANNEL_NAME}_zero.block"
+
+readonly CONFIG_BLOCK_BASENAME="$$.${CHANNEL_NAME}_config.block"
+readonly CONFIG_BLOCK="$TMP_PATH/$CONFIG_BLOCK_BASENAME"
+
+readonly SET_ANCHOR_PEER_TX_BASENAME="${NEWORG}_set_anchor_peer.tx"
+readonly SET_ANCHOR_PEER_TX="$TMP_PATH/$SET_ANCHOR_PEER_TX_BASENAME"
+
 readonly CLI_WORKING_DIR="/opt/gopath/src/github.com/hyperledger/fabric/peer"
 
-rm -f "$CONFIG_BLOCK_0" "$CONFIG_BLOCK" "$SET_ANCHOR_PEER_TX"
+rm -f "$ZERO_BLOCK" "$CONFIG_BLOCK" "$SET_ANCHOR_PEER_TX"
 
 for peer in $PEERS; do
 
@@ -68,19 +77,20 @@ for peer in $PEERS; do
 
     # TODO: verificar si el container esta levantado
 
-    fetch 0 "$CONFIG_BLOCK_0"
+    fetch 0 "$ZERO_BLOCK"
 
     echo_sep "$CLI peer channel join ..."
-    docker exec "$CLI" peer channel join $TLS_PARAMETERS -b "$CONFIG_BLOCK_0"
+    docker exec "$CLI" peer channel join $TLS_PARAMETERS -b "$ZERO_BLOCK"
 
     if [[ $peer == peer0 ]]; then
        # los peer0 se configuran como anchor
 
        readonly ANCHOR_PEER_NAME="peer0.${NEWORG,,}.$NETWORK_DOMAIN"
 
-       fetch config "$CONFIG_BLOCK"
+       fetch config "$CONFIG_BLOCK_BASENAME"
 
-       docker exec "$CLI" cat "$(basename "$CONFIG_BLOCK")" > "$CONFIG_BLOCK"
+       # Use command to avoid the DOCKERDEBUG echo alter the cat output
+       command docker exec "$CLI" cat "$CONFIG_BLOCK_BASENAME" > "$CONFIG_BLOCK"
 
        check_file "$CONFIG_BLOCK"
 
@@ -90,11 +100,11 @@ for peer in $PEERS; do
                          -n "$ANCHOR_PEER_NAME" \
                          -u "$SET_ANCHOR_PEER_TX"
 
-       docker cp "$SET_ANCHOR_PEER_TX" "$CLI:$CLI_WORKING_DIR/$SET_ANCHOR_PEER_TX"
+       docker cp "$SET_ANCHOR_PEER_TX" "$CLI:$CLI_WORKING_DIR/$SET_ANCHOR_PEER_TX_BASENAME"
 
        echo_sep "Ejecutando $CLI peer channel update add anchor ..."
        docker exec "$CLI" peer channel update $TLS_PARAMETERS -o "$ORDERER" -c "$CHANNEL_NAME" \
-                     -f "$CLI_WORKING_DIR/$SET_ANCHOR_PEER_TX"
+                     -f "$CLI_WORKING_DIR/$SET_ANCHOR_PEER_TX_BASENAME"
 
        echo_green "$ANCHOR_PEER_NAME configured as anchor peer"
     fi
