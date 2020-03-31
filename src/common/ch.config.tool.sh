@@ -172,7 +172,7 @@ function check_consenter_json() {
       l_value="$string_or_file"
    fi
 
-   local l_client_tls_cert, l_server_tls_cert, l_host, l_port
+   local l_client_tls_cert l_server_tls_cert l_host l_port
 
    l_client_tls_cert=$( echo "$l_value" | jq -r ".client_tls_cert" )
    l_server_tls_cert=$( echo "$l_value" | jq -r ".server_tls_cert" )
@@ -201,8 +201,7 @@ function check_consenter_json() {
    fi
 
    local l_jp
-
-   l_jp=$( get_path_from_key consenters )
+         l_jp=$( get_path_from_key consenters )
 
    for host in $(echo "$GROUP_CONFIG_JSON" | jq -r "${l_jp}[].host" ); do
        if [[ $host == "$l_host" ]]; then
@@ -358,7 +357,8 @@ function replace_b64_x590() {
 function add_consenter_item() {
    echo "Adding consenter item ..."
 
-   local l_jp="$( get_path_from_key consenters )"
+   local l_jp
+         l_jp="$( get_path_from_key consenters )"
 
    GROUP_CONFIG_JSON=$( echo "$GROUP_CONFIG_JSON" | jq "$l_jp += [${1}]" )
 
@@ -366,7 +366,8 @@ function add_consenter_item() {
       echo_red "ERROR: task [$TASK] -k [$KEY] consenter could not be added (empty result)"
       exit 1
    fi
-   local l_host=$( echo "${1}" | jq -r ".host" )
+   local l_host
+         l_host=$( echo "${1}" | jq -r ".host" )
 
    for host in $(echo "$GROUP_CONFIG_JSON" | jq -r "${l_jp}[].host" ); do
        [[ $host == "$l_host" ]] && return 0 # OK !!!
@@ -385,10 +386,13 @@ function add_orderer_address() {
    echo "Adding orderer address item ..."
 
    local l_value="$1"
-   local l_host=$( echo "$l_value" | jq -r ".host" )
-   local l_port=$( echo "$l_value" | jq -r ".port" )
-   local l_item=${l_host}:${l_port}
-   local l_jp=$( get_path_from_key OrdererAddresses )
+   local l_host
+         l_host=$( echo "$l_value" | jq -r ".host" )
+   local l_port
+         l_port=$( echo "$l_value" | jq -r ".port" )
+   local l_item="$l_host:$l_port"
+   local l_jp
+         l_jp=$( get_path_from_key OrdererAddresses )
 
    modify_trimmed_config_json "$l_jp += [\"$l_item\"]"
 
@@ -407,7 +411,8 @@ function add_orderer_address() {
 
 function add_msp_key_item() {
 
-   local l_jp="$( get_path_from_key "$1" )"
+   local l_jp
+         l_jp="$( get_path_from_key "$1" )"
    echo "key_path [$l_jp]"
 
    GROUP_CONFIG_JSON="$( echo "$GROUP_CONFIG_JSON" | jq "$l_jp += [\"${2}\"]" )"
@@ -446,11 +451,13 @@ function read_or_decode() {
       echo_red "ERROR: -k [$key] unknow"
       exit 1
    fi
-   local key_path=$( get_path_from_key "$1" )
+   local key_path
+         key_path=$( get_path_from_key "$1" )
 
    echo "key [$key]"
    echo "key path [$key_path]"
-   local value=$( echo "$GROUP_CONFIG_JSON" | jq "$key_path" )
+   local value
+         value=$( echo "$GROUP_CONFIG_JSON" | jq "$key_path" )
 
    if [[ -z $value ]]; then
       echo "key [$key] not found or empty"
@@ -496,9 +503,11 @@ function set_value() {
       exit 1
    fi
 
-   local key_path="$( get_path_from_key "$key" )"
+   local key_path
+         key_path="$( get_path_from_key "$key" )"
    echo "key_path [$key_path]"
-   local current_value=$( echo "$GROUP_CONFIG_JSON" | jq -c "$key_path" )
+   local current_value
+         current_value=$( echo "$GROUP_CONFIG_JSON" | jq -c "$key_path" )
 
    if [[ $new_value == "$current_value" ]]; then
       echo "WARN: key [$key] from -f [$KV_FILE] has the same value [$new_value] of the one in original config"
@@ -694,7 +703,8 @@ function main() {
 
    elif [[ $CHANNEL_GROUP != "none" && $MSPID == "none" ]]; then
         readonly CHANNEL_GROUPS="$CHANNEL_GROUP"
-        local GROUP_CONFIG_JSON="$( jq ".channel_group.groups.$CHANNEL_GROUP" "$ORIGINAL_TRIMMED_CONFIG_JSON" )"
+        local GROUP_CONFIG_JSON
+              GROUP_CONFIG_JSON="$( jq ".channel_group.groups.$CHANNEL_GROUP" "$ORIGINAL_TRIMMED_CONFIG_JSON" )"
 
         if [[ -z $GROUP_CONFIG_JSON || $GROUP_CONFIG_JSON == "null" ]]; then
            echo_red "ERROR: -g [$CHANNEL_GROUP] not found in config"
@@ -723,7 +733,8 @@ function main() {
         fi
    else # $CHANNEL_GROUP != "none" && $MSPID != "none"
         readonly CHANNEL_GROUPS="$CHANNEL_GROUP"
-        local GROUP_CONFIG_JSON="$( jq ".channel_group.groups.$CHANNEL_GROUP.groups.$MSPID" "$ORIGINAL_TRIMMED_CONFIG_JSON" )"
+        local GROUP_CONFIG_JSON
+              GROUP_CONFIG_JSON="$( jq ".channel_group.groups.$CHANNEL_GROUP.groups.$MSPID" "$ORIGINAL_TRIMMED_CONFIG_JSON" )"
 
         if [[ ( $TASK != "add" || $KEY != "org" ) && ( -z $GROUP_CONFIG_JSON || $GROUP_CONFIG_JSON == "null" ) ]]; then
            echo_red "ERROR: -m [$MSPID] does not exist in -g [$CHANNEL_GROUP]"
