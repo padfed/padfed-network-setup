@@ -11,16 +11,7 @@ echo_running
 
 readonly DIR="$( dirname "$PWD")/dev"          # BUG: dependiente del PWD / FIX: usar $BASE definido 2 líneas arriba
 
-TLS_PARAMETERS=""
-if [[ $TLS_ENABLED == true ]]; then
-    TLS_PARAMETERS="--tls --cafile /etc/hyperledger/orderer/tls/tlsca.afip.tribfed.gob.ar-cert.pem"
-
-    if [[ $TLS_CLIENT_AUTH_REQUIRED == true ]]; then
-       TLS_PARAMETERS="$TLS_PARAMETERS --clientauth"
-       TLS_PARAMETERS="$TLS_PARAMETERS --keyfile /etc/hyperledger/tls/client.key"
-       TLS_PARAMETERS="$TLS_PARAMETERS --certfile /etc/hyperledger/tls/client.crt"
-    fi
-fi
+readonly TLS_PARAMETERS=$( get_tls_parameters )
 
 # el peer0 de AFIP crea el channel
 echo_sep "Ejecutando peer0_afip_cli peer channel create ..."
