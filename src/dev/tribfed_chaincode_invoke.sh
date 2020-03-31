@@ -8,10 +8,7 @@ readonly ARGS="$2"
 readonly BASE=$(dirname "$(readlink -f "$0")")
 [[ ! -v ENVIRONMENT ]] && source "$BASE/.env"
 
-docker() {
-   [[ -v DOCKERDEBUG ]] && echo docker "$@"
-   command docker "$@"
-}
+. "$BASE/../common/lib.sh"
 
 case "$SUBCOMMAND" in
 query)  readonly WAIT_FOR_EVENT=""
@@ -20,7 +17,7 @@ query)  readonly WAIT_FOR_EVENT=""
 invoke) readonly WAIT_FOR_EVENT="--waitForEvent"
         readonly LOGGING_LEVEL="DEBUG"
         ;;
-*) echo "Usage: $0 [invoke|query] {json-args}"
+*) echo_red "ERROR: Usage: $0 <invoke|query> <json-args>"
    exit 1
 esac
 
@@ -46,15 +43,7 @@ if [[ $SUBCOMMAND == invoke ]]; then
     TLS_WITH_PEERS="$TLS_WITH_PEERS --tlsRootCertFiles /etc/hyperledger/tls_root_cas/tlsca.$org_domain-cert.pem"
   done
 
-  ORDERER_PARAMS="-o $ORDERER"
-  if [[ $TLS_ENABLED == true ]]; then
-    ORDERER_PARAMS="$ORDERER_PARAMS --tls --cafile /etc/hyperledger/orderer/tls/tlsca.afip.$NETWORK_DOMAIN-cert.pem"
-    if [[ $TLS_CLIENT_AUTH_REQUIRED == true ]]; then
-      ORDERER_PARAMS="$ORDERER_PARAMS --clientauth"
-      ORDERER_PARAMS="$ORDERER_PARAMS --keyfile /etc/hyperledger/tls/client.key"
-      ORDERER_PARAMS="$ORDERER_PARAMS --certfile /etc/hyperledger/tls/client.crt"
-    fi
-  fi
+  ORDERER_PARAMS="-o $ORDERER $( get_tls_parameters )"
 fi
 
 docker exec peer0_afip_cli peer chaincode "$SUBCOMMAND" \
