@@ -34,8 +34,12 @@ query() {
     cc query "$@"
 }
 
-echo '#################################################### (test putPersonas)'
-invoke PutPersonas '[
+invoke DelPersona 20176058650 || true
+
+invoke DelPersona 20322608846 || true
+
+echo '#################################################### (test PutPersonaList)'
+invoke PutPersonaList '[
       {
          "id":20176058650,
          "persona":{
@@ -79,9 +83,9 @@ invoke PutPersonas '[
    ]'
 
 echo '#################################################### (CHAINCODE DELETE PERSONA)'
-invoke delPersona 20176058650
+invoke DelPersona 20176058650
 
-echo '#################################################### (test putPersona I[debe fallar])'
+echo '#################################################### (test PutPersona [debe fallar])'
 P='{
   "id":30537647716,
   "persona":{
@@ -97,28 +101,31 @@ P='{
 
 !(invoke PutPersona "$P") || die "Debió fallar!"
 
-echo '#################################################### (test putPersona II)'
+echo '#################################################### (test PutPersona ch)'
 P='{
   "id":20322608846,
   "persona":{
-      "id": 20322608846,
-      "tipo": "F",
-      "tipoid":"C",
-      "estado": "A",
-      "nombre": "ANTONIO",
-      "apellido": "OTONIO",
-      "documento":{
-           "tipo":90,
-           "numero":"XX"
-      },
-      "nacimiento": "1965-11-01",
-      "fallecimiento": "1965-11-01"
+            "id":20322608846,
+            "tipoid":"C",
+            "tipo":"F",
+            "estado":"A",
+            "nombre":"XXXX",
+            "apellido":"XXXXXXXXX",
+            "materno":"XXXXXX",
+            "sexo":"F",
+            "nacimiento":"1891-01-01",
+            "fallecimiento":"2018-04-02",
+            "documento":{
+               "tipo":90,
+               "numero":"XX"
+            },
+            "ds":"2019-02-21",
+            "ch": ["sexo"]
   }
 }'
 invoke PutPersona "$P"
 
-
-echo '#################################################### (test putPersona III)'
+echo '#################################################### (test PutPersona III)'
 P='{
   "id": 20224235020,
   "persona":{
