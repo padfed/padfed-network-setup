@@ -555,7 +555,7 @@ usage() {
   echo "   options:"
   echo "   -o <original config>: fetch (default)|*.pb (protobuf)|*.block (protobuf)|*.protobuf|*.json"
   echo "   -c <channel name>"
-  echo "   -m <MSPID>"
+  echo "   -m <MSPID>: case sensitive"
   echo "   -g <channel group>: Application|Orderer"
   echo "   -k <key>: org anchor_peer consenter fabric_node_ous $KEY_CRYPTO_MATERIAL"
   echo "   -v <value>:"
@@ -612,7 +612,7 @@ function main() {
          o) ORIGINAL_CONFIG=$OPTARG ;;
          c) CHANNEL_NAME=${OPTARG,,} ;;
          g) CHANNEL_GROUP=${OPTARG,,} ;;
-         m) MSPID=${OPTARG^^} ;;
+         m) MSPID=$OPTARG ;;
          n) PEER_NAME=$OPTARG ;;
          p) PEER_PORT=$OPTARG ;;
          k) KEY=$OPTARG ;;
