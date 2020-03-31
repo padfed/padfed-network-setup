@@ -465,17 +465,23 @@ function read_or_decode() {
    fi
 
    if ( is_decodable "$TASK" "$key" ); then
-      echo "$value" | base64 --decode -i
-      [[ $OUTPUT != "none" ]] && readonly RESULT=$( echo "$value" | base64 --decode -i )
+      readonly RESULT=$( echo "$value" | base64 --decode -i )
+      if [[ $OUTPUT == none ]]; then
+         echo_green "$TASK key [$key]"
+         echo "$RESULT"
+      fi
    else
-      echo "$value" | jq
-      [[ $OUTPUT != "none" ]] && readonly RESULT=$( echo "$value" | jq . )
+      readonly RESULT=$( echo "$value" | jq . )
+      if [[ $OUTPUT == none ]]; then
+         echo_green "$TASK key [$key]"
+         echo "$value" | jq
+      fi
    fi
 
    if [[ $OUTPUT != "none" ]]; then
       echo "$RESULT" > "$OUTPUT"
       check_file "$OUTPUT"
-      echo "output file [$OUTPUT] available"
+      echo_green "output file [$OUTPUT] available"
    fi
 }
 
