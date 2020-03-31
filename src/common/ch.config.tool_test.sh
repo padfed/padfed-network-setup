@@ -60,6 +60,7 @@ fi
 
 set -x
 ./ch.config.tool.sh decode      -o "$BCONNECT_CONFIG_JSON" -g application -m Argentina -k intermediate_certs
+./ch.config.tool.sh decode      -o "$BCONNECT_CONFIG_JSON" -g application -m Argentina -k tls_intermediate_certs
 
 ./ch.config.tool.sh read        -o "$PADFED_CONFIG_JSON"
 ./ch.config.tool.sh read        -o "$PADFED_CONFIG_JSON" -g orderer
