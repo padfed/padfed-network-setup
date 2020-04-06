@@ -2,8 +2,8 @@
 [[ -n $DEBUG ]] && set -x
 set -Eeuo pipefail
 
-BASE=$(dirname $(readlink -f $0))
-[[ ! -v ENVIRONMENT ]] && source $BASE/.env
+BASE=$(dirname "$(readlink -f "$0")")
+[[ ! -v ENVIRONMENT ]] && source "$BASE/.env"
 
 . "$BASE/../common/lib.sh"
 
@@ -13,21 +13,29 @@ if [[ $# -eq 1 ]]; then
    readonly ARG1_VERSION="$1" # opcionalmente recibe una version
 fi
 
-echo "CHAINCODE_DIR [$(realpath "$CHAINCODE_DIR")]"
+echo "CHAINCODE_ARTIFACT [${CHAINCODE_ARTIFACT:-}]"
+echo "CHAINCODE_DIR [$CHAINCODE_DIR]"
+echo "CHAINCODE_PACKAGE [$CHAINCODE_PACKAGE]"
 
 if [[ ! -d $CHAINCODE_DIR ]]; then
    echo_red "CHAINCODE_DIR [$(realpath "$CHAINCODE_DIR")] doesn't exist"
    exit 1
 fi
 
-if [[ ! -r $CHAINCODE_DIR/main.go ]]; then
-   if [[ ! -v CHAINCODE_ARTIFACT ]]; then
-      echo_red "main.go not found in CHAINCODE_DIR [$CHAINCODE_DIR] and CHAINCODE_ARTIFACT not especificated"
-      exit 1
-   fi
+if [[ ! -r $CHAINCODE_DIR/main.go && ! -v CHAINCODE_ARTIFACT ]]; then
+   echo_red "main.go not found in CHAINCODE_DIR [$CHAINCODE_DIR] and CHAINCODE_ARTIFACT not especificated"
+   exit 1
+fi
+
+if [[ -v CHAINCODE_ARTIFACT ]]; then
    if [[ ! -r $CHAINCODE_ARTIFACT ]]; then
       echo_red "CHAINCODE_ARTIFACT [$CHAINCODE_ARTIFACT] doesn't exist"
       exit 1
+   fi
+   if [[ -f $CHAINCODE_DIR/main.go ]]; then
+      echo "Removing chaincode sources from [$CHAINCODE_DIR] ..."
+      # Use "${var:?}" to ensure this never expands to /*
+      rm -r "${CHAINCODE_DIR:?}"/*
    fi
    tar -C "$CHAINCODE_DIR" -xaf "$CHAINCODE_ARTIFACT"
    if [[ ! -r $CHAINCODE_DIR/main.go ]]; then
@@ -87,7 +95,7 @@ echo "ENDORSEMENT_POLICY [$ENDORSEMENT_POLICY]"
 echo_sep "activating $CHAINCODE_NAME version $NEW_VERSION command $COMMAND ..."
 docker exec peer0_afip_cli peer chaincode "$COMMAND" $TLS_PARAMETERS -o "$ORDERER" -C "$CHANNEL_NAME" -n "$CHAINCODE_NAME" -v "$NEW_VERSION" -c '{"Args":[""]}' -P "$ENDORSEMENT_POLICY"
 
-while !(docker exec peer0_afip_cli peer chaincode list --instantiated -C "$CHANNEL_NAME" | sed -E "/Name: $CHAINCODE_NAME,/s/.* Version: ([^,]+),.*/\1/" | grep -q "$NEW_VERSION"); do
+while ! (docker exec peer0_afip_cli peer chaincode list --instantiated -C "$CHANNEL_NAME" | sed -E "/Name: $CHAINCODE_NAME,/s/.* Version: ([^,]+),.*/\1/" | grep -q "$NEW_VERSION"); do
    echo 'waiting for chaincode instantiation ...'
    sleep 1
 done
