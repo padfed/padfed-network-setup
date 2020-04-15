@@ -283,7 +283,7 @@ services:
       - CORE_PEER_ID=cli
       - CORE_PEER_ADDRESS=peer1.afip.tribfed.gob.ar:7051
       - CORE_PEER_LOCALMSPID=AFIP
-      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/admin/admin/msp
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/admin/msp
       # TLS
       - CORE_PEER_TLS_ENABLED=${TLS_ENABLED}
       - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/peer/tls/ca.crt
