@@ -13,7 +13,7 @@ services:
     container_name: ${ORDERER_NAME}
     image: hyperledger/fabric-orderer:${HLF_VERSION:?HLF_VERSION key no encontrada/no definida/.env no localizado}
     environment:
-      - NO_PROXY=localhost,127.0.0.1,orderer.arba.tribfed.gob.ar,orderer.comarb.tribfed.gob.ar,orderer.afip.tribfed.gob.ar
+      - NO_PROXY=localhost,127.0.0.1,*.${NETWORK_DOMAIN}
       - FABRIC_LOGGING_SPEC=${LOG_LEVEL:?LOG_LEVEL key no encontrada/no definida/.env no localizado}
       - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
       - ORDERER_GENERAL_GENESISMETHOD=file
@@ -51,7 +51,7 @@ services:
     container_name: orderer.comarb.tribfed.gob.ar
     image: hyperledger/fabric-orderer:${HLF_VERSION:?HLF_VERSION key no encontrada/no definida/.env no localizado}
     environment:
-      - NO_PROXY=localhost,127.0.0.1,orderer.arba.tribfed.gob.ar,orderer.comarb.tribfed.gob.ar,orderer.afip.tribfed.gob.ar
+      - NO_PROXY=localhost,127.0.0.1,*.${NETWORK_DOMAIN}
       - FABRIC_LOGGING_SPEC=${LOG_LEVEL:?LOG_LEVEL key no encontrada/no definida/.env no localizado}
       - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
       - ORDERER_GENERAL_GENESISMETHOD=file
@@ -88,7 +88,7 @@ services:
     container_name: orderer.arba.tribfed.gob.ar
     image: hyperledger/fabric-orderer:${HLF_VERSION:?HLF_VERSION key no encontrada/no definida/.env no localizado}
     environment:
-      - NO_PROXY=localhost,127.0.0.1,orderer.arba.tribfed.gob.ar,orderer.comarb.tribfed.gob.ar,orderer.afip.tribfed.gob.ar
+      - NO_PROXY=localhost,127.0.0.1,*.${NETWORK_DOMAIN}
       - FABRIC_LOGGING_SPEC=${LOG_LEVEL:?LOG_LEVEL key no encontrada/no definida/.env no localizado}
       - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
       - ORDERER_GENERAL_GENESISMETHOD=file
@@ -134,13 +134,7 @@ services:
     container_name: peer0.afip.tribfed.gob.ar
     image: hyperledger/fabric-peer:${HLF_VERSION:?HLF_VERSION key no encontrada/no definida/.env no localizado}
     environment:
-      - NO_PROXY=localhost,127.0.0.1,${ORDERER_NAME},
-        orderer.arba.tribfed.gob.ar,
-        orderer.comarb.tribfed.gob.ar,
-        orderer.afip.tribfed.gob.ar,
-        peer0.afip.tribfed.gob.ar,peer1.afip.tribfed.gob.ar,
-        peer0.arba.tribfed.gob.ar,peer1.arba.tribfed.gob.ar,
-        peer0.comarb.tribfed.gob.ar,peer1.comarb.tribfed.gob.ar
+      - NO_PROXY=localhost,127.0.0.1,*.${NETWORK_DOMAIN}
       - CORE_PEER_ID=peer0.afip.tribfed.gob.ar
       - CORE_PEER_ADDRESS=peer0.afip.tribfed.gob.ar:7051
       - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${ENVIRONMENT}_${FABRIC_NETWORK_NAME}
@@ -214,13 +208,7 @@ services:
     environment:
       #- CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.afip.tribfed.gob.ar:7051
       #- CORE_PEER_GOSSIP_BOOTSTRAP=peer0.afip.tribfed.gob.ar:7051
-      - NO_PROXY=localhost,127.0.0.1,${ORDERER_NAME},
-        orderer.arba.tribfed.gob.ar,
-        orderer.comarb.tribfed.gob.ar,
-        orderer.afip.tribfed.gob.ar,
-        peer0.afip.tribfed.gob.ar,peer1.afip.tribfed.gob.ar,
-        peer0.arba.tribfed.gob.ar,peer1.arba.tribfed.gob.ar,
-        peer0.comarb.tribfed.gob.ar,peer1.comarb.tribfed.gob.ar
+      - NO_PROXY=localhost,127.0.0.1,*.${NETWORK_DOMAIN}
       - FABRIC_LOGGING_SPEC=${LOG_LEVEL:?LOG_LEVEL key no encontrada/no definida/.env no localizado}
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
       - CORE_PEER_ID=peer1.afip.tribfed.gob.ar
@@ -270,10 +258,7 @@ services:
     tty: true
     stdin_open: true
     environment:
-      - NO_PROXY=localhost,127.0.0.1,${ORDERER_NAME},
-        peer0.afip.tribfed.gob.ar,peer1.afip.tribfed.gob.ar,
-        peer0.arba.tribfed.gob.ar,peer1.arba.tribfed.gob.ar,
-        peer0.comarb.tribfed.gob.ar,peer1.comarb.tribfed.gob.ar
+      - NO_PROXY=localhost,127.0.0.1,*.${NETWORK_DOMAIN}
       - GOPATH=/opt/gopath
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
 #      - CORE_LOGGING_GRPC=DEBUG
@@ -316,10 +301,7 @@ services:
     tty: true
     stdin_open: true
     environment:
-      - NO_PROXY=localhost,127.0.0.1,${ORDERER_NAME},
-        peer0.afip.tribfed.gob.ar,peer1.afip.tribfed.gob.ar,
-        peer0.arba.tribfed.gob.ar,peer1.arba.tribfed.gob.ar,
-        peer0.comarb.tribfed.gob.ar,peer1.comarb.tribfed.gob.ar
+      - NO_PROXY=localhost,127.0.0.1,*.${NETWORK_DOMAIN}
       - GOPATH=/opt/gopath
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
 #      - CORE_LOGGING_GRPC=DEBUG
@@ -362,10 +344,7 @@ services:
     image: hyperledger/fabric-ccenv:${HLF_VERSION:?HLF_VERSION key no encontrada/no definida/.env no localizado}
     tty: true
     environment:
-      - NO_PROXY=localhost,127.0.0.1,${ORDERER_NAME},
-        peer0.afip.tribfed.gob.ar,peer1.afip.tribfed.gob.ar,
-        peer0.arba.tribfed.gob.ar,peer1.arba.tribfed.gob.ar,
-        peer0.comarb.tribfed.gob.ar,peer1.comarb.tribfed.gob.ar
+      - NO_PROXY=localhost,127.0.0.1,*.${NETWORK_DOMAIN}
       - GOPATH=/opt/gopath
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
       - FABRIC_LOGGING_SPEC=${LOG_LEVEL:?LOG_LEVEL key no encontrada/no definida/.env no localizado}
@@ -392,10 +371,7 @@ services:
     tty: true
     stdin_open: true
     environment:
-      - NO_PROXY=localhost,127.0.0.1,${ORDERER_NAME},
-        peer0.afip.tribfed.gob.ar,peer1.afip.tribfed.gob.ar,
-        peer0.arba.tribfed.gob.ar,peer1.arba.tribfed.gob.ar,
-        peer0.comarb.tribfed.gob.ar,peer1.comarb.tribfed.gob.ar
+      - NO_PROXY=localhost,127.0.0.1,*.${NETWORK_DOMAIN}
       - GOPATH=/opt/gopath
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
       - FABRIC_LOGGING_SPEC=${LOG_LEVEL:?LOG_LEVEL key no encontrada/no definida/.env no localizado}
@@ -433,13 +409,7 @@ services:
     image: hyperledger/fabric-peer:${HLF_VERSION:?HLF_VERSION key no encontrada/no definida/.env no localizado}
     environment:
       #- CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.comarb.tribfed.gob.ar:7051
-      - NO_PROXY=localhost,127.0.0.1,${ORDERER_NAME},
-        orderer.arba.tribfed.gob.ar,
-        orderer.comarb.tribfed.gob.ar,
-        orderer.afip.tribfed.gob.ar,
-        peer0.afip.tribfed.gob.ar,peer1.afip.tribfed.gob.ar,
-        peer0.arba.tribfed.gob.ar,peer1.arba.tribfed.gob.ar,
-        peer0.comarb.tribfed.gob.ar,peer1.comarb.tribfed.gob.ar
+      - NO_PROXY=localhost,127.0.0.1,*.${NETWORK_DOMAIN}
         # LOGGING LEVELS
 #      - CORE_CHAINCODE_LOGGING_SHIM=DEBUG
 #      - CORE_CHAINCODE_LOGGING_LEVEL=DEBUG
@@ -497,13 +467,7 @@ services:
     image: hyperledger/fabric-peer:${HLF_VERSION:?HLF_VERSION key no encontrada/no definida/.env no localizado}
     environment:
        #- CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.comarb.tribfed.gob.ar:7051
-       - NO_PROXY=localhost,127.0.0.1,${ORDERER_NAME},
-         orderer.arba.tribfed.gob.ar,
-         orderer.comarb.tribfed.gob.ar,
-         orderer.afip.tribfed.gob.ar,
-         peer0.afip.tribfed.gob.ar,peer1.afip.tribfed.gob.ar,
-         peer0.arba.tribfed.gob.ar,peer1.arba.tribfed.gob.ar,
-         peer0.comarb.tribfed.gob.ar,peer1.comarb.tribfed.gob.ar
+       - NO_PROXY=localhost,127.0.0.1,*.${NETWORK_DOMAIN}
        - CORE_CHAINCODE_LOGGING_SHIM=INFO
        - NPM_CONFIG_LOGLEVEL=INFO
        - CORE_CHAINCODE_LOGGING_LEVEL=INFO
@@ -553,10 +517,7 @@ services:
     tty: true
     stdin_open: true
     environment:
-      - NO_PROXY=localhost,127.0.0.1,${ORDERER_NAME},
-        peer0.afip.tribfed.gob.ar,peer1.afip.tribfed.gob.ar,
-        peer0.arba.tribfed.gob.ar,peer1.arba.tribfed.gob.ar,
-        peer0.comarb.tribfed.gob.ar,peer1.comarb.tribfed.gob.ar
+      - NO_PROXY=localhost,127.0.0.1,*.${NETWORK_DOMAIN}
       - GOPATH=/opt/gopath
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
       - FABRIC_LOGGING_SPEC=${LOG_LEVEL:?LOG_LEVEL key no encontrada/no definida/.env no localizado}
@@ -595,10 +556,7 @@ services:
     tty: true
     stdin_open: true
     environment:
-      - NO_PROXY=localhost,127.0.0.1,${ORDERER_NAME},
-        peer0.afip.tribfed.gob.ar,peer1.afip.tribfed.gob.ar,
-        peer0.arba.tribfed.gob.ar,peer1.arba.tribfed.gob.ar,
-        peer0.comarb.tribfed.gob.ar,peer1.comarb.tribfed.gob.ar
+      - NO_PROXY=localhost,127.0.0.1,*.${NETWORK_DOMAIN}
       - GOPATH=/opt/gopath
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
       - CORE_PEER_ID=cli
@@ -635,13 +593,7 @@ services:
     image: hyperledger/fabric-peer:${HLF_VERSION:?HLF_VERSION key no encontrada/no definida/.env no localizado}
     environment:
       #- CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.arba.tribfed.gob.ar:7051
-      - NO_PROXY=localhost,127.0.0.1,${ORDERER_NAME},
-        orderer.arba.tribfed.gob.ar,
-        orderer.comarb.tribfed.gob.ar,
-        orderer.afip.tribfed.gob.ar,
-        peer0.afip.tribfed.gob.ar,peer1.afip.tribfed.gob.ar,
-        peer0.arba.tribfed.gob.ar,peer1.arba.tribfed.gob.ar,
-        peer0.comarb.tribfed.gob.ar,peer1.comarb.tribfed.gob.ar
+      - NO_PROXY=localhost,127.0.0.1,*.${NETWORK_DOMAIN}
 #      - CORE_CHAINCODE_LOGGING_SHIM=DEBUG
 #      - CORE_CHAINCODE_LOGGING_LEVEL=DEBUG
 #      - CORE_LOGGING_GRPC=DEBUG
@@ -700,13 +652,7 @@ services:
     image: hyperledger/fabric-peer:${HLF_VERSION}
     environment:
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.arba.tribfed.gob.ar:7051
-      - NO_PROXY=localhost,127.0.0.1,${ORDERER_NAME},
-        orderer.arba.tribfed.gob.ar,
-        orderer.comarb.tribfed.gob.ar,
-        orderer.afip.tribfed.gob.ar,
-        peer0.afip.tribfed.gob.ar,peer1.afip.tribfed.gob.ar,
-        peer0.arba.tribfed.gob.ar,peer1.arba.tribfed.gob.ar,
-        peer0.comarb.tribfed.gob.ar,peer1.comarb.tribfed.gob.ar
+      - NO_PROXY=localhost,127.0.0.1,*.${NETWORK_DOMAIN}
       - CORE_CHAINCODE_LOGGING_SHIM=INFO
       - NPM_CONFIG_LOGLEVEL=INFO
       - CORE_CHAINCODE_LOGGING_LEVEL=INFO
@@ -749,10 +695,7 @@ services:
     tty: true
     stdin_open: true
     environment:
-      - NO_PROXY=localhost,127.0.0.1,${ORDERER_NAME},
-        peer0.afip.tribfed.gob.ar,peer1.afip.tribfed.gob.ar,
-        peer0.arba.tribfed.gob.ar,peer1.arba.tribfed.gob.ar,
-        peer0.comarb.tribfed.gob.ar,peer1.comarb.tribfed.gob.ar
+      - NO_PROXY=localhost,127.0.0.1,*.${NETWORK_DOMAIN}
       - GOPATH=/opt/gopath
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
       - FABRIC_LOGGING_SPEC=${LOG_LEVEL:?LOG_LEVEL key no encontrada/no definida/.env no localizado}
@@ -790,10 +733,7 @@ services:
     tty: true
     stdin_open: true
     environment:
-      - NO_PROXY=localhost,127.0.0.1,${ORDERER_NAME},
-        peer0.afip.tribfed.gob.ar,peer1.afip.tribfed.gob.ar,
-        peer0.arba.tribfed.gob.ar,peer1.arba.tribfed.gob.ar,
-        peer0.comarb.tribfed.gob.ar,peer1.comarb.tribfed.gob.ar
+      - NO_PROXY=localhost,127.0.0.1,*.${NETWORK_DOMAIN}
       - GOPATH=/opt/gopath
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
       - CORE_PEER_ID=cli
