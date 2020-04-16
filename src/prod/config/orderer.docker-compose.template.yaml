@@ -32,7 +32,7 @@ services:
       - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/var/hyperledger/orderer/tls/orderer-tls-client.crt
       - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/var/hyperledger/orderer/tls/orderer-tls-client.key
       - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
- 
+
       # OPERATIONS
       - ORDERER_METRICS_PROVIDER=prometheus
       - ORDERER_OPERATIONS_LISTENADDRESS=:${OPERATIONS_PORT}
@@ -51,8 +51,8 @@ services:
       - ${ORDERER_PORT:?ORDERER_PORT no encontrada}:7050
       - ${OPERATIONS_PORT}:${OPERATIONS_PORT}
     volumes:
-        - ./crypto-config:/var/hyperledger/orderer
-        - ${FABRIC_LEDGER_STORE_PATH:?FABRIC_LEDGER_STORE_PATH no encontrada}/${MSPID}-${NODE_BASENAME}:/var/hyperledger/production/orderer
+      - ./crypto-config:/var/hyperledger/orderer
+      - ${FABRIC_LEDGER_STORE_PATH:?FABRIC_LEDGER_STORE_PATH no encontrada}/${MSPID}-${NODE_BASENAME}:/var/hyperledger/production/orderer
     networks:
       - {{DOCKER_NETWORK_NAME}}-orderer
 #   extra_hosts:
