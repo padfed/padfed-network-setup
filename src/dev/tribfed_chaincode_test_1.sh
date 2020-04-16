@@ -429,4 +429,6 @@ for p in "$PF" "$PJ"; do
     invoke PutPersona "$p"
     echo "#################################################### (CHAINCODE GetPersona $id)"
     query GetPersona "$id"
+    echo "#################################################### (CHAINCODE GetPersona $id)"
+    query QueryPersona "$id"
 done
