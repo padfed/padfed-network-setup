@@ -15,13 +15,13 @@ function end2end() {
 
     show_config
 
-    check_env FABRIC_INSTANCE_PATH   
-    check_env FABRIC_LEDGER_STORE_PATH 
+    check_env FABRIC_INSTANCE_PATH
+    check_env FABRIC_LEDGER_STORE_PATH
 
     clean
 
     setup_crypto_end2end
-   
+
     node_init
 
     node_test
@@ -29,7 +29,7 @@ function end2end() {
 
 function setup_crypto_end2end() {
 
-    check_env FABRIC_INSTANCE_PATH   
+    check_env FABRIC_INSTANCE_PATH
 
     setup_cas
 
@@ -41,7 +41,7 @@ function setup_crypto_end2end() {
 }
 
 function setup_cas() {
-   
+
     # Crea CAs para MSP, TLS y OPE
     "scripts/cas.create.sh"
 }
@@ -50,10 +50,10 @@ function make_requests() {
 
     local NODE_BASENAME_OR_CLIENTS="$1"
 
-    # Check env variables   
-    check_env CRYPTO_STAGE_PATH  
+    # Check env variables
+    check_env CRYPTO_STAGE_PATH
 
-    warn_backup_rm "$CRYPTO_STAGE_PATH/$MSPID-$NODE_BASENAME_OR_CLIENTS" 
+    warn_backup_rm "$CRYPTO_STAGE_PATH/$MSPID-$NODE_BASENAME_OR_CLIENTS"
 
     "scripts/node.crypto.make.requests.sh" "$NODE_BASENAME_OR_CLIENTS"
 }
@@ -62,7 +62,7 @@ function cas_process_requests() {
     local REQUESTS_PATH=""
     [[ "$#" == 1 ]] && REQUESTS_PATH="$(dirname "$1")/$(basename "$1")"
 
-    if [[ ! -v CAS_INSTANCES_PATH || ! -d "$CAS_INSTANCES_PATH/${MSPID^^}" ]]; then
+    if [[ ! -v CAS_INSTANCES_PATH || ! -d $CAS_INSTANCES_PATH/$MSPID ]]; then
        echo_red "ERROR: Unconfigured CAs"
        exit 1
     fi
@@ -83,7 +83,7 @@ function cas_process_requests() {
 }
 
 node_crypto_index() {
-    
+
     # Indexa material cryptografico
     "scripts/node.crypto.index.sh" "$NODE_BASENAME"
 }
@@ -124,10 +124,10 @@ node_health() {
 }
 
 function clean() {
-   [[ -v CAS_INSTANCES_PATH ]] && warn_backup_rm "$CAS_INSTANCES_PATH/$MSPID" 
+   [[ -v CAS_INSTANCES_PATH ]] && warn_backup_rm "$CAS_INSTANCES_PATH/$MSPID"
    warn_backup_rm "$CRYPTO_STAGE_PATH"
-   warn_backup_rm "$FABRIC_INSTANCE_PATH" 
-   warn_backup_rm "$FABRIC_LEDGER_STORE_PATH" 
+   warn_backup_rm "$FABRIC_INSTANCE_PATH"
+   warn_backup_rm "$FABRIC_LEDGER_STORE_PATH"
 
    for d in $( find ./ -maxdepth 1 -name "$MSPID"-*-crypto-admin -type d ); do
        warn_backup_rm "$d"
@@ -165,7 +165,7 @@ function check_node() {
    local opt=""
    [[ $# == 2 ]] && opt=" | $2"
    case $NODE_BASENAME in
-   orderer* ) [[ $MSPID == "${ORDERER_ORG_MSPID}" || ( $MSPID != "${ORDERER_ORG_MSPID}" && $ORDERER_TYPE == "etcdraft" ) ]] || { echo_red "ERROR: p1 [$NODE_BASENAME] (only ${ORDERER_ORG_MSPID} or ORDERER_TYPE=etcdraft)"; usage; } ;;
+   orderer* ) [[ $MSPID == "$ORDERER_ORG_MSPID" || ( $MSPID != "$ORDERER_ORG_MSPID" && $ORDERER_TYPE == etcdraft ) ]] || { echo_red "ERROR: p1 [$NODE_BASENAME] (only $ORDERER_ORG_MSPID or ORDERER_TYPE=etcdraft)"; usage; } ;;
    peer0 | peer1 ) ;;
    * ) echo_red "ERROR: p1 [$NODE_BASENAME] must be peer0 | peer1 | orderer* (only ${ORDERER_ORG_MSPID} or ORDERER_TYPE=etcdraft) $opt"
        usage
@@ -199,7 +199,7 @@ function show_config() {
    echo "MSP_CA_CRT_FILENAME [${MSP_CA_CRT_FILENAME:-}]"
    echo "TLS_CA_CRT_FILENAME [${TLS_CA_CRT_FILENAME:-}]"
    echo "OPE_CA_CRT_FILENAME [${OPE_CA_CRT_FILENAME:-}]"
-   
+
    echo ""
    echo "Directorio temporal para trabajar con el material criptográfico:"
    echo "CRYPTO_STAGE_PATH [${CRYPTO_STAGE_PATH:-}]"
@@ -233,7 +233,7 @@ esac
 readonly SETUP_CONF="setup.conf" && check_file "$SETUP_CONF" && source "$SETUP_CONF"
 
 check_env MSPID
-check_env DOMAIN 
+check_env DOMAIN
 check_env CA_MODE
 
 readonly RUNMODE="${1,,}"
@@ -241,57 +241,57 @@ readonly RUNMODE="${1,,}"
 case "$RUNMODE" in
 clean ) clean
    ;;
-conf | config | show_config ) 
+conf | config | show_config )
    show_config
    ;;
 cas ) [[ "$#" != 1 ]] && { echo_red "ERROR: $# unexpected number of params"; usage; }
-   setup_cas 
+   setup_cas
    ;;
 make_requests )
-   [[ $ARG2 == "clients" ]] || check_node "$ARG2" "clients" 
+   [[ $ARG2 == "clients" ]] || check_node "$ARG2" "clients"
    make_requests "$ARG2"
    ;;
 process_requests | cas_process_requests )
-   [[ ! -d $ARG2 ]] && { echo_red "ERROR: p2 [$ARG2] must be a directory"; usage; } 
+   [[ ! -d $ARG2 ]] && { echo_red "ERROR: p2 [$ARG2] must be a directory"; usage; }
    cas_process_requests "$ARG2"
    ;;
-index | crypto_index | node_crypto_index ) 
+index | crypto_index | node_crypto_index )
    check_node "$ARG2"
    node_crypto_index
    ;;
 crypto_end2end )
-   check_node "$ARG2" 
-   setup_crypto_end2end 
+   check_node "$ARG2"
+   setup_crypto_end2end
    ;;
 setup )
    check_node "$ARG2"
    node_setup
    ;;
 init )
-   check_node "$ARG2" 
-   node_init  
+   check_node "$ARG2"
+   node_init
    ;;
 test )
-   check_node "$ARG2"     
-   node_test  
+   check_node "$ARG2"
+   node_test
    ;;
-health ) 
-   check_node  "$ARG2"     
-   node_health 
+health )
+   check_node  "$ARG2"
+   node_health
    ;;
-orderer_tlsca_crt | set_orderer_tlsca_crt ) 
-   check_node "$ARG2"    
-   set_orderer_tlsca_crt "$ARG3" 
+orderer_tlsca_crt | set_orderer_tlsca_crt )
+   check_node "$ARG2"
+   set_orderer_tlsca_crt "$ARG3"
    ;;
-end2end ) 
-   check_node "$ARG2"    
+end2end )
+   check_node "$ARG2"
    end2end
    ;;
-extract_crt | extract_crts ) 
-   [[ ! -s $ARG2 && ! -d $ARG2 ]] && { echo_red "ERROR: p2 [$ARG2] must be a chain pem file or directory"; usage; } 
+extract_crt | extract_crts )
+   [[ ! -s $ARG2 && ! -d $ARG2 ]] && { echo_red "ERROR: p2 [$ARG2] must be a chain pem file or directory"; usage; }
    extract_crt "$ARG2"
-   ;; 
-*) echo_red "ERROR: p1 [$1] invalid" 
+   ;;
+*) echo_red "ERROR: p1 [$1] invalid"
    usage
    ;;
 esac

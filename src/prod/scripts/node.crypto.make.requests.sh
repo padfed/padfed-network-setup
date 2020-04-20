@@ -13,9 +13,9 @@ echo_running
 
 # Check env variables
 check_env MSPID
-check_env DOMAIN 
-check_env CRYPTO_STAGE_PATH 
-check_env CA_MODE 
+check_env DOMAIN
+check_env CRYPTO_STAGE_PATH
+check_env CA_MODE
 
 echo "CRT_DN_C [${CRT_DN_C:=AR}]"
 echo "CRT_DN_O [${CRT_DN_O:=${DOMAIN}}]"
@@ -72,7 +72,7 @@ function mk_user_requests() {
    local CN=${BASENAME}${CRT_DN_CN_SUFFIX}
 
    # MSP
-   local MSP_OU_2="" && [[ $CRT_DN_OU_MSP != "none" ]] && MSP_OU_2="/OU=$CRT_DN_OU_MSP" 
+   local MSP_OU_2="" && [[ $CRT_DN_OU_MSP != "none" ]] && MSP_OU_2="/OU=$CRT_DN_OU_MSP"
    local SUBJ="/C=${CRT_DN_C}/O=${CRT_DN_O}/OU=${CRT_DN_OU_MSP_CLIENT}${MSP_OU_2}/CN=${CN}$SERIALNUMBER"
    local SERVICE="msp-client"
    mk_request
@@ -96,7 +96,7 @@ function mk_admin_requests() {
    local CN=${BASENAME}${CRT_DN_CN_SUFFIX}
 
    # MSP
-   local MSP_OU_2="" && [[ $CRT_DN_OU_MSP != "none" ]] && MSP_OU_2="/OU=$CRT_DN_OU_MSP" 
+   local MSP_OU_2="" && [[ $CRT_DN_OU_MSP != "none" ]] && MSP_OU_2="/OU=$CRT_DN_OU_MSP"
    local SUBJ="/C=${CRT_DN_C}/O=${CRT_DN_O}/OU=${CRT_DN_OU_MSP_ADMIN}${MSP_OU_2}/CN=${CN}$SERIALNUMBER"
    local SERVICE="msp-client"
    mk_request
@@ -124,8 +124,8 @@ function mk_peer_requests() {
    local FULLNAME=${BASENAME}${SEP}$DOMAIN
 
    # MSP
-   local MSP_OU_2="" && [[ $CRT_DN_OU_MSP != "none" ]] && MSP_OU_2="/OU=$CRT_DN_OU_MSP" 
-   case $BASENAME in
+   local MSP_OU_2="" && [[ $CRT_DN_OU_MSP != "none" ]] && MSP_OU_2="/OU=$CRT_DN_OU_MSP"
+   case "$BASENAME" in
    peer* )    local OU="/OU=${CRT_DN_OU_MSP_PEER}${MSP_OU_2}" ;;
    orderer* ) local OU="/OU=${CRT_DN_OU_MSP_ORDERER}${MSP_OU_2}" ;;
    * ) echo_red "ERROR: [$BASENAME] must be peer* | orderer*"
@@ -144,12 +144,12 @@ function mk_peer_requests() {
    mk_request
 
    # TLS-SERVER
-   local CN=$FULLNAME # Para TLS-SERVER en el CN va el FQDN que es el FULLNAME 
+   local CN=$FULLNAME # Para TLS-SERVER en el CN va el FQDN que es el FULLNAME
    local SUBJ="/C=${CRT_DN_C}/O=${CRT_DN_O}/OU=$CRT_DN_OU_TLS/CN=${CN}$SERIALNUMBER"
    local SERVICE="tls-server"
    mk_request
 
-   if [[ $OPERATIONS_ENABLE == "true" ]]; then
+   if [[ $OPERATIONS_ENABLE == true ]]; then
       local CN=${BASENAME}${CRT_DN_CN_SUFFIX}
       local SUBJ="/C=${CRT_DN_C}/O=${CRT_DN_O}/OU=$CRT_DN_OU_OPE/CN=${CN}$SERIALNUMBER"
       local SERVICE="ope-client"
@@ -196,16 +196,16 @@ set_SERIALNUMBER
 if [[ -v NODE_BASENAME && ! -z $NODE_BASENAME ]]; then
 
    mk_peer_requests "$NODE_BASENAME"
-   
-   if [[ $NODE_BASENAME =~ orderer* || ( $MSPID != "${ORDERER_ORG_MSPID}" && $NODE_BASENAME == "peer0" ) ]]; then
+
+   if [[ $NODE_BASENAME =~ orderer* || ( $MSPID != "$ORDERER_ORG_MSPID" && $NODE_BASENAME == peer0 ) ]]; then
 
       for admin in $ADMINS_BASENAME; do mk_admin_requests "${admin,,}"; done
    fi
-else  # clients
-      for admin in $ADMINS_BASENAME; do mk_admin_requests "${admin,,}"; done
+else # clients
+      for admin in ${ADMINS_BASENAME:-}; do mk_admin_requests "${admin,,}"; done
 fi
 
-if [[ $OPERATIONS_ENABLE == "true" && -v OPERS_BASENAME && ! -z $OPERS_BASENAME ]]; then
+if [[ $OPERATIONS_ENABLE == true && -v OPERS_BASENAME && ! -z $OPERS_BASENAME ]]; then
    for oper in $OPERS_BASENAME; do mk_oper_requests "$oper"; done
 fi
 
@@ -213,17 +213,17 @@ if [[ -v USERS_BASENAME && ! -z $USERS_BASENAME ]]; then
    for user in $USERS_BASENAME; do mk_user_requests "$user"; done
 fi
 if [[ -v ALL_PEERS_BASENAMES && ! -z $ALL_PEERS_BASENAMES ]]; then
-   for node in $ALL_PEERS_BASENAMES; do 
-     
+   for node in $ALL_PEERS_BASENAMES; do
+
        case "$node" in
-       orderer* | peer* ) ;; 
+       orderer* | peer* ) ;;
        * ) echo_red "ERROR: [$ALL_PEERS_BASENAMES] must be list of [peer0 | peer1 | orderer* (only ${ORDERER_ORG_MSPID} or ORDERER_TYPE=etcdraft)]"
            exit 1
            ;;
        esac
 
        # NODE_BASENAME puede estar incluido dentro de ALL_NODE_BASENAMES
-       [[ $node != "${NODE_BASENAME:="x"}" ]] && mk_peer_requests "$node" 
+       [[ $node != "${NODE_BASENAME:=x}" ]] && mk_peer_requests "$node"
    done
 fi
 

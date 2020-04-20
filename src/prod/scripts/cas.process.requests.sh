@@ -12,27 +12,27 @@ function mk_get() {
    local CN=$(get_CN_from_CSR "$REQUEST_FILE")
    local REQUEST_FILE_BASENAME=$(basename "$REQUEST_FILE" .request)
    case "$REQUEST_FILE_BASENAME" in
-   *-msp-client ) 
-         local SERVICE="msp" 
+   *-msp-client )
+         local SERVICE="msp"
          local CLIENT_OR_SERVER="client"
          ;;
-   *-msp-server ) 
-         local SERVICE="msp" 
+   *-msp-server )
+         local SERVICE="msp"
          local CLIENT_OR_SERVER="server"
          ;;
-   *-tls-client ) 
+   *-tls-client )
          local SERVICE="tls"
          local CLIENT_OR_SERVER="client"
          ;;
-   *-tls-server ) 
+   *-tls-server )
          local SERVICE="tls"
          local CLIENT_OR_SERVER="server"
          ;;
-   *-ope-client ) 
+   *-ope-client )
          local SERVICE="ope"
          local CLIENT_OR_SERVER="client"
          ;;
-   *-ope-server ) 
+   *-ope-server )
          local SERVICE="ope"
          local CLIENT_OR_SERVER="server"
          ;;
@@ -41,7 +41,7 @@ function mk_get() {
 
    local CRT_FILE="$CRTS_DIR/$REQUEST_FILE_BASENAME.crt"
 
-   "$BASE/ca.process.request.sh" ${SERVICE} "$CLIENT_OR_SERVER" $CN "$REQUEST_FILE" "$CRT_FILE" 
+   "$BASE/ca.process.request.sh" "$SERVICE" "$CLIENT_OR_SERVER" "$CN" "$REQUEST_FILE" "$CRT_FILE"
 
    check_x509_crt "$CRT_FILE"
 
@@ -54,8 +54,8 @@ function copy_cacert() {
     local SRC_CA="${1,,}"
     local DEST="$2"
 
-    local source_file=$( "$BASE/ca.print.material.path.sh" $SRC_CA crt ) 
-    
+    local source_file=$( "$BASE/ca.print.material.path.sh" "$SRC_CA" crt )
+
     check_x509_crt $source_file # If exists must be a x509 crt
 
     cp -f "$source_file" "$DEST"
@@ -70,7 +70,7 @@ function copy_cacerts() {
    copy_cacert tls "$DEST_CACERTS_PATH/$TLS_CA_CRT_FILENAME"
    copy_cacert ope "$DEST_CACERTS_PATH/$OPE_CA_CRT_FILENAME"
 
-   if [[ $CA_MODE == "INTERMEDIATECAS" ]]; then
+   if [[ $CA_MODE == INTERMEDIATECAS ]]; then
       copy_cacert root "$DEST_CACERTS_PATH/$ROOTCA_FILENAME"
    fi
 }
@@ -86,13 +86,13 @@ if [[ "$#" -ne 1 ]]; then
 fi
 
 readonly REQUESTS_DIR="$1"
-check_dir "$REQUESTS_DIR" 
+check_dir "$REQUESTS_DIR"
 
 readonly CRTS_DIR="$REQUESTS_DIR-crts"
 mkdir -p "$CRTS_DIR"
 
 for r in $(find "$REQUESTS_DIR" -name '*.request'); do
-    mk_get $r
+    mk_get "$r"
 done
 
 copy_cacerts "$CRTS_DIR/cacerts"
