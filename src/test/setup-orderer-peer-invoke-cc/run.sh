@@ -8,6 +8,10 @@ readonly BASE="$(dirname "$(readlink -f "$0")")"
 pushd "$BASE/../../prod"
 
 . "$PWD/scripts/lib.sh"
+
+readonly SETUP_CONF="setup.conf" && check_file "$SETUP_CONF" && source "$SETUP_CONF"
+
+check_env MSPID
 }
 
 function mktemp2() {
@@ -22,10 +26,10 @@ function run_orderer() {
 
 function run_peer() {
 ./setup.sh make_requests peer0
-./setup.sh cas_process_requests XXX-peer0-crypto-requests
+./setup.sh cas_process_requests "$MSPID-peer0-crypto-requests"
 ./setup.sh setup peer0
 
-pushd ./fabric-instance/XXX-peer0
+pushd "./fabric-instance/$MSPID-peer0"
 
 sed -i 's/OPERATIONS_PORT=.*/OPERATIONS_PORT=10443/' .env
 
@@ -45,9 +49,9 @@ function deploy_cc() {
 
 readonly CC_VERSION="$1"
 
-pushd ./fabric-instance/XXX-peer0
+pushd "./fabric-instance/$MSPID-peer0"
 
-sed -i "s/CHAINCODE_ENDORSMENT=.*/CHAINCODE_ENDORSMENT=\"AND('XXX.member')\"/" .env
+sed -i "s/CHAINCODE_ENDORSMENT=.*/CHAINCODE_ENDORSMENT=\"AND('${MSPID}.member')\"/" .env
 
 source .env
 
@@ -76,7 +80,7 @@ run_orderer
 
 run_peer
 
-deploy_cc 0.8.7
+deploy_cc 0.8.8
 
 popd
 
