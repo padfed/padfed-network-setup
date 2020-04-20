@@ -11,7 +11,7 @@ echo_running
 
 function set_env() {
    [[ ! -v SETUP_CONF ]] && readonly SETUP_CONF="setup.conf" && check_file "$SETUP_CONF" && source "$SETUP_CONF"
-   
+
    # Defaults
    echo "ENVIRONMENT [${ENVIRONMENT:=prod}]"
    echo "TLS_ENABLED ${TLS_ENABLED:=true}]"
@@ -25,20 +25,24 @@ function set_env() {
    echo "CHAINCODE_ENDORSMENT [${CHAINCODE_ENDORSMENT:="OR('AFIP.peer','COMARB.peer','ARBA.peer','CBA.peer')"}]"
    echo "CHAINCODE_REPO_URL [${CHAINCODE_REPO_URL:="https:\/\/nexus.cloudint.afip.gob.ar\/nexus\/repository\/padfed-bc-raw"}]"
    echo "ORDERER_TYPE [${ORDERER_TYPE:=solo}]"
+   echo "HTTP_PROXY [${HTTP_PROXY:=""}]"
+   echo "HTTPS_PROXY [${HTTPS_PROXY:=$HTTP_PROXY}]"
+   echo "NO_PROXY [${NO_PROXY:=""}]"
+
+   echo "PEER_PORT [${PEER_PORT:=7051}]"
+   echo "ORDERER_NAME [${ORDERER_NAME:-}]"
+   echo "ORDERER_PORT [${ORDERER_PORT:=7050}]"
+   echo "OPERATIONS_ENABLE [${OPERATIONS_ENABLE:=false}]"
+   echo "OPERATIONS_PORT [${OPERATIONS_PORT:=9443}]"
 
    # Check env variables
-   
-   check_env DOMAIN 
+
+   check_env DOMAIN
    check_env FABRIC_INSTANCE_PATH
    check_env FABRIC_LEDGER_STORE_PATH
    check_env CRYPTO_STAGE_PATH
    check_env FABRIC_VERSION
-   
-   [[ ! -v PEER_PORT ]]         && readonly PEER_PORT=7051 # Defaul port
-   [[ ! -v ORDERER_PORT ]]      && readonly ORDERER_PORT=7050 
-   [[ ! -v OPERATIONS_ENABLE ]] && readonly OPERATIONS_ENABLE="false"
-   [[ ! -v OPERATIONS_PORT ]]   && readonly OPERATIONS_PORT=9443
-   
+
    local SEP="." && [[ -v NODE_NAMESEP && "$NODE_NAMESEP" == "-" ]] && SEP="-"
    readonly NODE_NAME=${NODE_BASENAME}${SEP}$DOMAIN
 
@@ -46,44 +50,44 @@ function set_env() {
    peer* )    readonly NODE_TYPE="peer" ;;
    orderer* ) readonly NODE_TYPE="orderer" ;;
    esac
-   
+
    # From index.conf
-   
+
    readonly INDEX_CONF="$CRYPTO_STAGE_PATH/$MSPID-$NODE_BASENAME/index.conf"
    check_file "$INDEX_CONF" && source "$INDEX_CONF"
-   
-   [[ -z ${MSP_CA_CRT:=""} || ! -r $MSP_CA_CRT ]] && { echo_red "MSP_CA_CRT [${MSP_CA_CRT:-}] not indexed in [$INDEX_CONF]"; exit 1; } 
-   [[ -z ${TLS_CA_CRT:=""} || ! -r $TLS_CA_CRT ]] && { echo_red "TLS_CA_CRT [${TLS_CA_CRT:-}] not indexed in [$INDEX_CONF]"; exit 1; } 
+
+   [[ -z ${MSP_CA_CRT:=""} || ! -r $MSP_CA_CRT ]] && { echo_red "MSP_CA_CRT [${MSP_CA_CRT:-}] not indexed in [$INDEX_CONF]"; exit 1; }
+   [[ -z ${TLS_CA_CRT:=""} || ! -r $TLS_CA_CRT ]] && { echo_red "TLS_CA_CRT [${TLS_CA_CRT:-}] not indexed in [$INDEX_CONF]"; exit 1; }
 
    # Optional itermediatecas
-   [[ -z ${MSP_ICA_CRT:=""} ]] || check_x509_crt "$MSP_ICA_CRT" 
+   [[ -z ${MSP_ICA_CRT:=""} ]] || check_x509_crt "$MSP_ICA_CRT"
    [[ -z ${TLS_ICA_CRT:=""} ]] || check_x509_crt "$TLS_ICA_CRT"
 
    if [[ $OPERATIONS_ENABLE == "true" ]]; then
       [[ -z ${OPE_ICA_CRT:=""}  ]] || check_x509_crt "$OPE_ICA_CRT"
-      [[ -z ${NODE_OPE_CRT:=""} ]] || check_x509_crt "$NODE_OPE_CRT"  
+      [[ -z ${NODE_OPE_CRT:=""} ]] || check_x509_crt "$NODE_OPE_CRT"
    fi
 
-   [[ -z ${ADMIN_1_MSP_KEY:=""} || ! -r $ADMIN_1_MSP_KEY ]] && { echo_red "ADMIN_1_MSP_KEY [${ADMIN_1_MSP_KEY:-}] not indexed in [$INDEX_CONF]"; exit 1; } 
-   [[ -z ${ADMIN_1_MSP_CRT:=""} || ! -r $ADMIN_1_MSP_CRT ]] && { echo_red "ADMIN_1_MSP_CRT [${ADMIN_1_MSP_CRT:-}] not indexed in [$INDEX_CONF]"; exit 1; } 
-   [[ -z ${ADMIN_1_TLS_KEY:=""} || ! -r $ADMIN_1_TLS_KEY ]] && { echo_red "ADMIN_1_TLS_KEY [${ADMIN_1_TLS_KEY:-}] not indexed in [$INDEX_CONF]"; exit 1; } 
-   [[ -z ${ADMIN_1_TLS_CRT:=""} || ! -r $ADMIN_1_TLS_CRT ]] && { echo_red "ADMIN_1_TLS_CRT [${ADMIN_1_TLS_CRT:-}] not indexed in [$INDEX_CONF]"; exit 1; } 
+   [[ -z ${ADMIN_1_MSP_KEY:=""} || ! -r $ADMIN_1_MSP_KEY ]] && { echo_red "ADMIN_1_MSP_KEY [${ADMIN_1_MSP_KEY:-}] not indexed in [$INDEX_CONF]"; exit 1; }
+   [[ -z ${ADMIN_1_MSP_CRT:=""} || ! -r $ADMIN_1_MSP_CRT ]] && { echo_red "ADMIN_1_MSP_CRT [${ADMIN_1_MSP_CRT:-}] not indexed in [$INDEX_CONF]"; exit 1; }
+   [[ -z ${ADMIN_1_TLS_KEY:=""} || ! -r $ADMIN_1_TLS_KEY ]] && { echo_red "ADMIN_1_TLS_KEY [${ADMIN_1_TLS_KEY:-}] not indexed in [$INDEX_CONF]"; exit 1; }
+   [[ -z ${ADMIN_1_TLS_CRT:=""} || ! -r $ADMIN_1_TLS_CRT ]] && { echo_red "ADMIN_1_TLS_CRT [${ADMIN_1_TLS_CRT:-}] not indexed in [$INDEX_CONF]"; exit 1; }
 
-   [[ -z ${NODE_MSP_KEY:=""} || ! -r $NODE_MSP_KEY ]] && { echo_red "NODE_MSP_KEY [${NODE_MSP_KEY:-}] not indexed in [$INDEX_CONF]"; exit 1; } 
-   [[ -z ${NODE_MSP_CRT:=""} || ! -r $NODE_MSP_CRT ]] && { echo_red "NODE_MSP_CRT [${NODE_MSP_CRT:-}] not indexed in [$INDEX_CONF]"; exit 1; } 
-   [[ -z ${NODE_TLS_KEY:=""} || ! -r $NODE_TLS_KEY ]] && { echo_red "NODE_TLS_KEY [${NODE_TLS_KEY:-}] not indexed in [$INDEX_CONF]"; exit 1; } 
-   [[ -z ${NODE_TLS_CRT:=""} || ! -r $NODE_TLS_CRT ]] && { echo_red "NODE_TLS_CRT [${NODE_TLS_CRT:-}] not indexed in [$INDEX_CONF]"; exit 1; } 
-  
-   [[ -z ${NODE_TLS_CLIENT_KEY:=""} || ! -r $NODE_TLS_CLIENT_KEY ]] && { echo_red "NODE_TLS_CLIENT_KEY [${NODE_TLS_CLIENT_KEY:-}] not indexed in [$INDEX_CONF]"; exit 1; } 
-   [[ -z ${NODE_TLS_CLIENT_CRT:=""} || ! -r $NODE_TLS_CLIENT_CRT ]] && { echo_red "NODE_TLS_CLIENT_CRT [${NODE_TLS_CLIENT_CRT:-}] not indexed in [$INDEX_CONF]"; exit 1; } 
-  
+   [[ -z ${NODE_MSP_KEY:=""} || ! -r $NODE_MSP_KEY ]] && { echo_red "NODE_MSP_KEY [${NODE_MSP_KEY:-}] not indexed in [$INDEX_CONF]"; exit 1; }
+   [[ -z ${NODE_MSP_CRT:=""} || ! -r $NODE_MSP_CRT ]] && { echo_red "NODE_MSP_CRT [${NODE_MSP_CRT:-}] not indexed in [$INDEX_CONF]"; exit 1; }
+   [[ -z ${NODE_TLS_KEY:=""} || ! -r $NODE_TLS_KEY ]] && { echo_red "NODE_TLS_KEY [${NODE_TLS_KEY:-}] not indexed in [$INDEX_CONF]"; exit 1; }
+   [[ -z ${NODE_TLS_CRT:=""} || ! -r $NODE_TLS_CRT ]] && { echo_red "NODE_TLS_CRT [${NODE_TLS_CRT:-}] not indexed in [$INDEX_CONF]"; exit 1; }
+
+   [[ -z ${NODE_TLS_CLIENT_KEY:=""} || ! -r $NODE_TLS_CLIENT_KEY ]] && { echo_red "NODE_TLS_CLIENT_KEY [${NODE_TLS_CLIENT_KEY:-}] not indexed in [$INDEX_CONF]"; exit 1; }
+   [[ -z ${NODE_TLS_CLIENT_CRT:=""} || ! -r $NODE_TLS_CLIENT_CRT ]] && { echo_red "NODE_TLS_CLIENT_CRT [${NODE_TLS_CLIENT_CRT:-}] not indexed in [$INDEX_CONF]"; exit 1; }
+
    # From config
    readonly     DOCKER_COMPOSE_TEMPLATE_YAML="config/$NODE_TYPE.docker-compose.template.yaml"
    check_file "$DOCKER_COMPOSE_TEMPLATE_YAML"
-   
+
    readonly     CONFIGTX_TEMPLATE_YAML="config/configtx.template.yaml"
    check_file "$CONFIGTX_TEMPLATE_YAML"
-   
+
    local SEP="." && [[ -v NODE_NAMESEP && "$NODE_NAMESEP" == "-" ]] && SEP="-"
    readonly ANCHOR_PEER_NAME="peer0${SEP}$DOMAIN"
 }
@@ -94,7 +98,7 @@ function set_ORDERER_TLSCA_CRT_FILENAME() {
    if [[ -v ORDERER_TLSCA_CRT_FILENAME ]]; then
       local f="config/$ORDERER_TLSCA_CRT_FILENAME"
       echo "About check crt [$f] ..."
-      if ( is_x509_crt "$f" ); then 
+      if ( is_x509_crt "$f" ); then
          cp -v "$f" "$PEER_CRYPTO_CONFIG/orderer/tls/$ORDERER_TLSCA_CRT_FILENAME"
          return 0
       fi
@@ -103,16 +107,16 @@ function set_ORDERER_TLSCA_CRT_FILENAME() {
    # assumes that ${ORDERER_ORG_MSPID} is running the orderer,
    # then the cert of its tlsca is also that of the orderer
 
-   [[ $MSPID == "${ORDERER_ORG_MSPID}" ]] || return 0 # on ${ORDERER_ORG_MSPID} peers only
+   [[ $MSPID == "$ORDERER_ORG_MSPID" ]] || return 0 # on ${ORDERER_ORG_MSPID} peers only
 
    if [[ -z "$TLS_ICA_CRT" ]]; then
-      cp -v "$TLS_CA_CRT"  "$PEER_CRYPTO_CONFIG/orderer/tls/ca.crt" 
+      cp -v "$TLS_CA_CRT"  "$PEER_CRYPTO_CONFIG/orderer/tls/ca.crt"
    elif [[ ! -z "$COMMON_ICA_CRT" ]]; then
         cp  "$TLS_ICA_CRT" "$PEER_CRYPTO_CONFIG/orderer/tls/ca.crt"
-        cat "$TLS_ICA_CRT" "$COMMON_ICA_CRT" "$TLS_CA_CRT" > "$PEER_CRYPTO_CONFIG/orderer/tls/ca-chain.crt" 
+        cat "$TLS_ICA_CRT" "$COMMON_ICA_CRT" "$TLS_CA_CRT" > "$PEER_CRYPTO_CONFIG/orderer/tls/ca-chain.crt"
    else
       cp  -v "$TLS_ICA_CRT" "$PEER_CRYPTO_CONFIG/orderer/tls/ca.crt"
-      cat -v "$TLS_ICA_CRT" "$TLS_CA_CRT" > "$PEER_CRYPTO_CONFIG/orderer/tls/ca-chain.crt" 
+      cat -v "$TLS_ICA_CRT" "$TLS_CA_CRT" > "$PEER_CRYPTO_CONFIG/orderer/tls/ca-chain.crt"
    fi
    ORDERER_TLSCA_CRT_FILENAME="ca.crt"
 }
@@ -156,11 +160,11 @@ function make_crypto_config() {
 #                    [peer|orderer]-ope-client.key
 #                    ca.key
 #                orderer (para el cli y raft)
-#                     tls 
+#                     tls
 #                        xxxxx (nombre en .env ORDERER_TLSCA_CRT_FILENAME)
 #
 ################################################
-   
+
    echo "About make crypto-config struct ..."
 
    mkdir -p "$PEER_CRYPTO_CONFIG"/{msp,tls,admin,operations,orderer/tls}
@@ -170,7 +174,7 @@ function make_crypto_config() {
    cp "$NODE_MSP_KEY"    "$PEER_CRYPTO_CONFIG/msp/keystore"
    cp "$MSP_CA_CRT"      "$PEER_CRYPTO_CONFIG/msp/cacerts"
    cp "$TLS_CA_CRT"      "$PEER_CRYPTO_CONFIG/msp/tlscacerts"
-  
+
    if [[ ! -z "$COMMON_ICA_CRT" ]]; then
       cp "$COMMON_ICA_CRT" "$PEER_CRYPTO_CONFIG/msp/intermediatecerts"
       cp "$COMMON_ICA_CRT" "$PEER_CRYPTO_CONFIG/msp/tlsintermediatecerts"
@@ -180,35 +184,35 @@ function make_crypto_config() {
    [[ ! -z "$TLS_ICA_CRT" ]] && cp "$TLS_ICA_CRT" "$PEER_CRYPTO_CONFIG/msp/tlsintermediatecerts"
 
    # config.yaml para NodeOUS en el raiz de la estructura MSP del peer
-   
+
    readonly PEER_MSP_CONFIG_YAML="$PEER_CRYPTO_CONFIG/msp/config.yaml"
    if [[ -z "$MSP_ICA_CRT" ]]; then
       local crtpath="cacerts/$(basename "$MSP_CA_CRT")"
    else
       local crtpath="intermediatecerts/$(basename "$MSP_ICA_CRT")"
-   fi   
+   fi
    make_msp_config_yaml "$crtpath" \
                         "${CRT_DN_OU_MSP:=none}" \
                         "$PEER_MSP_CONFIG_YAML"
-   
+
    check_file "$PEER_MSP_CONFIG_YAML"
-  
-   # TLS del peer   
+
+   # TLS del peer
    cp "$NODE_TLS_CRT"        "$PEER_CRYPTO_CONFIG/tls/${NODE_TYPE}-tls-server.crt"
    cp "$NODE_TLS_KEY"        "$PEER_CRYPTO_CONFIG/tls/${NODE_TYPE}-tls-server.key"
    cp "$NODE_TLS_CLIENT_CRT" "$PEER_CRYPTO_CONFIG/tls/${NODE_TYPE}-tls-client.crt"
    cp "$NODE_TLS_CLIENT_KEY" "$PEER_CRYPTO_CONFIG/tls/${NODE_TYPE}-tls-client.key"
-   if [[ -z "$TLS_ICA_CRT" ]]; then 
-      cp "$TLS_CA_CRT"  "$PEER_CRYPTO_CONFIG/tls/ca.crt" 
+   if [[ -z "$TLS_ICA_CRT" ]]; then
+      cp "$TLS_CA_CRT"  "$PEER_CRYPTO_CONFIG/tls/ca.crt"
    elif [[ ! -z "$COMMON_ICA_CRT" ]]; then
         cp  "$TLS_ICA_CRT" "$PEER_CRYPTO_CONFIG/tls/ca.crt"
-        cat "$TLS_ICA_CRT" "$COMMON_ICA_CRT" "$TLS_CA_CRT" > "$PEER_CRYPTO_CONFIG/tls/ca-chain.crt" 
+        cat "$TLS_ICA_CRT" "$COMMON_ICA_CRT" "$TLS_CA_CRT" > "$PEER_CRYPTO_CONFIG/tls/ca-chain.crt"
    else
       cp  "$TLS_ICA_CRT" "$PEER_CRYPTO_CONFIG/tls/ca.crt"
-      cat "$TLS_ICA_CRT" "$TLS_CA_CRT" > "$PEER_CRYPTO_CONFIG/tls/ca-chain.crt" 
+      cat "$TLS_ICA_CRT" "$TLS_CA_CRT" > "$PEER_CRYPTO_CONFIG/tls/ca-chain.crt"
    fi
 
-   if [[ $OPERATIONS_ENABLE == "true" && ! -z $NODE_OPE_CLIENT_CRT ]]; then 
+   if [[ $OPERATIONS_ENABLE == "true" && ! -z $NODE_OPE_CLIENT_CRT ]]; then
       # Para operation server reusa los certificados de TLS del server
       #
       cp "$NODE_OPE_CLIENT_KEY" "$PEER_CRYPTO_CONFIG/operations/${NODE_TYPE}-ope-client.key"
@@ -217,10 +221,10 @@ function make_crypto_config() {
          cp  "$OPE_CA_CRT"  "$PEER_CRYPTO_CONFIG/operations/ca.crt"
       elif [[ ! -z "$COMMON_ICA_CRT" ]]; then
          cp  "$OPE_ICA_CRT" "$PEER_CRYPTO_CONFIG/operations/ca.crt"
-         cat "$OPE_ICA_CRT" "$COMMON_ICA_CRT" "$OPE_CA_CRT" > "$PEER_CRYPTO_CONFIG/operations/ca-chain.crt" 
+         cat "$OPE_ICA_CRT" "$COMMON_ICA_CRT" "$OPE_CA_CRT" > "$PEER_CRYPTO_CONFIG/operations/ca-chain.crt"
       else
          cp  "$OPE_ICA_CRT" "$PEER_CRYPTO_CONFIG/operations/ca.crt"
-         cat "$OPE_ICA_CRT" "$OPE_CA_CRT" > "$PEER_CRYPTO_CONFIG/operations/ca-chain.crt" 
+         cat "$OPE_ICA_CRT" "$OPE_CA_CRT" > "$PEER_CRYPTO_CONFIG/operations/ca-chain.crt"
       fi
    fi
    # Estructura criptografica del admin del peer
@@ -233,22 +237,22 @@ function make_crypto_config() {
    cp "$MSP_CA_CRT"      "$PEER_CRYPTO_CONFIG/admin/msp/cacerts"
    cp "$TLS_CA_CRT"      "$PEER_CRYPTO_CONFIG/admin/msp/tlscacerts"
 
-   [[ ! -z "$MSP_ICA_CRT" ]] && cp "$MSP_ICA_CRT" "$PEER_CRYPTO_CONFIG/admin/msp/intermediatecerts" 
-   [[ ! -z "$TLS_ICA_CRT" ]] && cp "$TLS_ICA_CRT" "$PEER_CRYPTO_CONFIG/admin/msp/tlsintermediatecerts" 
+   [[ ! -z "$MSP_ICA_CRT" ]] && cp "$MSP_ICA_CRT" "$PEER_CRYPTO_CONFIG/admin/msp/intermediatecerts"
+   [[ ! -z "$TLS_ICA_CRT" ]] && cp "$TLS_ICA_CRT" "$PEER_CRYPTO_CONFIG/admin/msp/tlsintermediatecerts"
 
    if [[ ! -z "$COMMON_ICA_CRT" ]]; then
       cp "$COMMON_ICA_CRT" "$PEER_CRYPTO_CONFIG/admin/msp/intermediatecerts"
       cp "$COMMON_ICA_CRT" "$PEER_CRYPTO_CONFIG/admin/msp/tlsintermediatecerts"
    fi
 
-   # TLS del admin para el cli 
+   # TLS del admin para el cli
    cp "$ADMIN_1_TLS_CRT"  "$PEER_CRYPTO_CONFIG/admin/tls/client.crt"
    cp "$ADMIN_1_TLS_KEY"  "$PEER_CRYPTO_CONFIG/admin/tls/client.key"
-   if [[ -z "$TLS_ICA_CRT" ]]; then 
-      cp "$TLS_CA_CRT"  "$PEER_CRYPTO_CONFIG/admin/tls/ca.crt" 
+   if [[ -z "$TLS_ICA_CRT" ]]; then
+      cp "$TLS_CA_CRT"  "$PEER_CRYPTO_CONFIG/admin/tls/ca.crt"
    else
       cp  "$TLS_ICA_CRT" "$PEER_CRYPTO_CONFIG/admin/tls/ca.crt"
-      cat "$TLS_ICA_CRT" "$TLS_CA_CRT" > "$PEER_CRYPTO_CONFIG/admin/tls/ca-chain.crt" 
+      cat "$TLS_ICA_CRT" "$TLS_CA_CRT" > "$PEER_CRYPTO_CONFIG/admin/tls/ca-chain.crt"
    fi
 }
 
@@ -280,11 +284,11 @@ function set_CONFIGTX_YAML() {
 
    local CONFIGTX_YAML_CONTENT=$(< $CONFIGTX_TEMPLATE_YAML)
    CONFIGTX_YAML_CONTENT=${CONFIGTX_YAML_CONTENT//\{\{ORDERER_ORG_MSPID\}\}/$ORDERER_ORG_MSPID} # reemplaza N ocurrencias por linea
-   CONFIGTX_YAML_CONTENT=${CONFIGTX_YAML_CONTENT//\{\{NODE_NAME\}\}/$NODE_NAME} 
-   CONFIGTX_YAML_CONTENT=${CONFIGTX_YAML_CONTENT//\{\{ANCHOR_PEER_NAME\}\}/$ANCHOR_PEER_NAME} 
-   CONFIGTX_YAML_CONTENT=${CONFIGTX_YAML_CONTENT//\{\{CHANNEL_NAME\}\}/$CHANNEL_NAME} 
-   CONFIGTX_YAML_CONTENT=${CONFIGTX_YAML_CONTENT//\{\{CHANNEL_CONSORTIUM_NAME\}\}/$CHANNEL_CONSORTIUM_NAME} 
-   CONFIGTX_YAML_CONTENT=${CONFIGTX_YAML_CONTENT//\{\{ORDERER_TYPE\}\}/$ORDERER_TYPE} 
+   CONFIGTX_YAML_CONTENT=${CONFIGTX_YAML_CONTENT//\{\{NODE_NAME\}\}/$NODE_NAME}
+   CONFIGTX_YAML_CONTENT=${CONFIGTX_YAML_CONTENT//\{\{ANCHOR_PEER_NAME\}\}/$ANCHOR_PEER_NAME}
+   CONFIGTX_YAML_CONTENT=${CONFIGTX_YAML_CONTENT//\{\{CHANNEL_NAME\}\}/$CHANNEL_NAME}
+   CONFIGTX_YAML_CONTENT=${CONFIGTX_YAML_CONTENT//\{\{CHANNEL_CONSORTIUM_NAME\}\}/$CHANNEL_CONSORTIUM_NAME}
+   CONFIGTX_YAML_CONTENT=${CONFIGTX_YAML_CONTENT//\{\{ORDERER_TYPE\}\}/$ORDERER_TYPE}
 
    echo "$CONFIGTX_YAML_CONTENT" > "$CONFIGTX_YAML"
 }
@@ -325,9 +329,9 @@ function make_docker_env() {
 
    local FABRIC_INSTANCE_REALPATH="$(realpath "$FABRIC_INSTANCE_PATH")"
    local FABRIC_LEDGER_STORE_REALPATH="$(realpath "$FABRIC_LEDGER_STORE_PATH")"
-   
+
    cat <<< "#!/bin/bash
-# 
+#
 # Generado por ${THIS}
 #
 " > "$DOCKER_ENV"
@@ -336,15 +340,15 @@ function make_docker_env() {
 
    echo "ENVIRONMENT=$ENVIRONMENT" >> "$DOCKER_ENV"
    echo "TLS_ENABLED=$TLS_ENABLED" >> "$DOCKER_ENV"
-   echo "TLS_CLIENT_AUTH_REQUIRED=$TLS_CLIENT_AUTH_REQUIRED" >> "$DOCKER_ENV" 
+   echo "TLS_CLIENT_AUTH_REQUIRED=$TLS_CLIENT_AUTH_REQUIRED" >> "$DOCKER_ENV"
    echo "LOG_LEVEL=$LOG_LEVEL" >> "$DOCKER_ENV"
 
    echo "FABRIC_VERSION=$FABRIC_VERSION" >> "$DOCKER_ENV"
    echo "FABRIC_INSTANCE_PATH=$FABRIC_INSTANCE_REALPATH" >> "$DOCKER_ENV"
    echo "FABRIC_LEDGER_STORE_PATH=$FABRIC_LEDGER_STORE_REALPATH" >> "$DOCKER_ENV"
-   echo "SYSTEM_CHANNEL_NAME=ordererchannel" >> "$DOCKER_ENV" 
-   echo "CHANNEL_NAME=$CHANNEL_NAME" >> "$DOCKER_ENV" 
-   echo "NETWORK_NAME=$NETWORK_NAME" >> "$DOCKER_ENV" 
+   echo "SYSTEM_CHANNEL_NAME=ordererchannel" >> "$DOCKER_ENV"
+   echo "CHANNEL_NAME=$CHANNEL_NAME" >> "$DOCKER_ENV"
+   echo "NETWORK_NAME=$NETWORK_NAME" >> "$DOCKER_ENV"
    echo "MSPID=$MSPID" >> "$DOCKER_ENV"
    echo "DOMAIN=$DOMAIN" >> "$DOCKER_ENV"
    echo "NODE_NAME=$NODE_NAME" >> "$DOCKER_ENV"
@@ -353,16 +357,29 @@ function make_docker_env() {
    echo "ORDERER_PORT=$ORDERER_PORT" >> "$DOCKER_ENV"
    echo "OPERATIONS_ENABLE=$OPERATIONS_ENABLE" >> "$DOCKER_ENV"
    echo "OPERATIONS_PORT=${OPERATIONS_PORT:-}" >> "$DOCKER_ENV"
-   
-   if [[ $NODE_TYPE == "peer" ]]; then
+   echo "HTTP_PROXY=$HTTP_PROXY" >> "$DOCKER_ENV"
+   echo "HTTPS_PROXY=$HTTPS_PROXY" >> "$DOCKER_ENV"
+
+   if [[ -z $NO_PROXY ]]; then
+      NO_PROXY="localhost,172.0.0.1"
+      if [[ $NODE_TYPE == peer ]]; then
+         NO_PROXY="$NO_PROXY,$NODE_NAME,${NODE_NAME}_couchdb"
+         if [[ $MSPID == "$ORDERER_ORG_MSPID" && -v ORDERER_NAME && ! -z $ORDERER_NAME ]]; then
+            NO_PROXY="$NO_PROXY,$ORDERER_NAME"
+         fi
+      fi
+   fi
+   echo "NO_PROXY=$NO_PROXY" >> "$DOCKER_ENV"
+
+   if [[ $NODE_TYPE == peer ]]; then
       echo "PEER_PORT=$PEER_PORT" >> "$DOCKER_ENV"
       [[ -v ORDERER_NAME && ! -z $ORDERER_NAME ]] && echo "ORDERER_NAME=$ORDERER_NAME" >> "$DOCKER_ENV"
       [[ -v ORDERER_TLSCA_CRT_FILENAME && ! -z $ORDERER_TLSCA_CRT_FILENAME ]] && echo "ORDERER_TLSCA_CRT_FILENAME=$ORDERER_TLSCA_CRT_FILENAME" >> "$DOCKER_ENV"
 
-      echo "CHAINCODE_NAME=$CHAINCODE_NAME"             >> "$DOCKER_ENV" 
-      echo "CHAINCODE_PATH=$CHAINCODE_PATH"             >> "$DOCKER_ENV" 
-      echo "CHAINCODE_ENDORSMENT=\"$CHAINCODE_ENDORSMENT\"" >> "$DOCKER_ENV" 
-      echo "CHAINCODE_REPO_URL=$CHAINCODE_REPO_URL"     >> "$DOCKER_ENV" 
+      echo "CHAINCODE_NAME=$CHAINCODE_NAME"             >> "$DOCKER_ENV"
+      echo "CHAINCODE_PATH=$CHAINCODE_PATH"             >> "$DOCKER_ENV"
+      echo "CHAINCODE_ENDORSMENT=\"$CHAINCODE_ENDORSMENT\"" >> "$DOCKER_ENV"
+      echo "CHAINCODE_REPO_URL=$CHAINCODE_REPO_URL"     >> "$DOCKER_ENV"
    fi
    echo "" >> "$DOCKER_ENV"
    echo "$DOCKER_ENV"
@@ -416,8 +433,8 @@ function crypto_admin_export() {
    rm -rf     "$CRYPTO_ADMIN_DIR"
    mkdir -p   "$CRYPTO_ADMIN_DIR"
 
-   "$PEER_DIR/crypto.admin.export.sh" 
-   
+   "$PEER_DIR/crypto.admin.export.sh"
+
    cp -vrf "$PEER_DIR/$CRYPTO_ADMIN_DIR"/* "./$CRYPTO_ADMIN_DIR/"
 }
 
@@ -431,10 +448,10 @@ readonly FABRIC_BIN_PATH="$( realpath "../bin" )"
 check_dir "$FABRIC_BIN_PATH"
 
 readonly PEER_DIR="$FABRIC_INSTANCE_PATH/$MSPID-$NODE_BASENAME"
-warn_backup_rm "$PEER_DIR" 
+warn_backup_rm "$PEER_DIR"
 
 readonly STORAGE_DIR="$FABRIC_LEDGER_STORE_PATH/$MSPID-$NODE_BASENAME"
-warn_backup_rm "$STORAGE_DIR" 
+warn_backup_rm "$STORAGE_DIR"
 
 # Estructura compatible con la del proyecto qa
 
@@ -444,23 +461,23 @@ mkdir -p "$PEER_DIR/gopath/"{download,deploy,src}
 
 readonly PEER_CRYPTO_CONFIG="$PEER_DIR/crypto-config"
 
-make_crypto_config 
+make_crypto_config
 
 [[ $NODE_TYPE == "peer" ]] && set_ORDERER_TLSCA_CRT_FILENAME
 
 # docker-compose.yaml
 
-make_docker_compose 
+make_docker_compose
 
 # configtxgen orderer
 
 if [[ $MSPID == "$ORDERER_ORG_MSPID" ]]; then
 
    case "$NODE_BASENAME" in
-   orderer* ) make_genesis_block 
+   orderer* ) make_genesis_block
               ;;
-   peer0 )    make_channel_create_tx 
-              make_anchor_peer_update_tx 
+   peer0 )    make_channel_create_tx
+              make_anchor_peer_update_tx
               ;;
    esac
 fi
@@ -470,7 +487,7 @@ make_docker_env "$PEER_DIR/.env"
 
 # move admin scripts
 
-copy_admin_scripts 
+copy_admin_scripts
 
 # Estructura MSP de la org para generar la Tx para agregar la org al channel
 

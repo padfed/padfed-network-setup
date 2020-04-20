@@ -12,6 +12,9 @@ services:
     container_name: ${NODE_NAME:?NODE_NAME no encontrada}
     image: hyperledger/fabric-orderer:${FABRIC_VERSION:?FABRIC_VERSION no encontrada}
     environment:
+      - HTTP_PROXY=${HTTP_PROXY:-}
+      - HTTPS_PROXY=${HTTPS_PROXY:-}
+      - NO_PROXY=${NO_PROXY:-}
       - FABRIC_LOGGING_SPEC=${LOG_LEVEL:?LOG_LEVEL no encontrada}
       - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
       - ORDERER_GENERAL_GENESISMETHOD=file

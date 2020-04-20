@@ -12,6 +12,9 @@ services:
     container_name: ${NODE_NAME:?NODE_NAME no encontrada}
     image: hyperledger/fabric-peer:${FABRIC_VERSION:?FABRIC_VERSION no encontrada}
     environment:
+      - HTTP_PROXY=${HTTP_PROXY:-}
+      - HTTPS_PROXY=${HTTPS_PROXY:-}
+      - NO_PROXY=${NO_PROXY:-}
       - CORE_PEER_ID=${NODE_NAME}
       - CORE_PEER_ADDRESS=${NODE_NAME}:7051
       - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${ENVIRONMENT}_${NETWORK_NAME}
@@ -33,13 +36,13 @@ services:
       #- CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
 
       # TLS
-      - CORE_PEER_TLS_ENABLED=${TLS_ENABLED:?TLS_ENABLED no encontrada}
+      - CORE_PEER_TLS_ENABLED=${TLS_ENABLED:-true}
       - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/node/tls/peer-tls-server.key
       - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/node/tls/peer-tls-server.crt
       - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/node/tls/ca.crt
 
       # TLS client auth
-      - CORE_PEER_TLS_CLIENTAUTHREQUIRED=${TLS_CLIENT_AUTH_REQUIRED:?TLS_CLIENT_AUTH_REQUIRED no encontrada}
+      - CORE_PEER_TLS_CLIENTAUTHREQUIRED=${TLS_CLIENT_AUTH_REQUIRED:-true}
       - CORE_PEER_TLS_CLIENTKEY_FILE=/etc/hyperledger/node/tls/peer-tls-client.key
       - CORE_PEER_TLS_CLIENTCERT_FILE=/etc/hyperledger/node/tls/peer-tls-client.crt
       - CORE_PEER_TLS_CLIENTROOTCAS_FILES=/etc/hyperledger/node/tls/ca.crt
@@ -82,13 +85,16 @@ services:
 
   "{{NODE_NAME}}.cli":
     mem_limit: 1g
-    labels: 
+    labels:
       app: padfed
     container_name: ${NODE_NAME}.cli
     image: hyperledger/fabric-tools:${FABRIC_VERSION}
     tty: true
     stdin_open: true
     environment:
+      - HTTP_PROXY=${HTTP_PROXY:-}
+      - HTTPS_PROXY=${HTTPS_PROXY:-}
+      - NO_PROXY=${NO_PROXY:-}
       - GOPATH=/opt/gopath
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
       - FABRIC_LOGGING_SPEC=${LOG_LEVEL:?LOG_LEVEL key no encontrada}

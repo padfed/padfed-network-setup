@@ -36,7 +36,9 @@ sed -i 's/OPERATIONS_PORT=.*/OPERATIONS_PORT=10443/' .env
 # --filter "ansestor=..." requires docker v19
 #readonly REAL_ORDERER_NAME="$(docker ps --filter "ancestor=hyperledger/fabric-orderer" --format '{{.Names}}')"
 readonly REAL_ORDERER_NAME="$(docker ps --format '{{.Names}}' | grep orderer0)"
-sed -i "s/ORDERER_NAME=.*/ORDERER_NAME=$REAL_ORDERER_NAME/" .env
+if [[ -v ORDERER_NAME && $ORDERER_NAME != "$REAL_ORDERER_NAME" ]]; then
+   sed -i "s/$ORDERER_NAME/$REAL_ORDERER_NAME/" .env
+fi
 
 docker-compose up -d
 
@@ -45,7 +47,7 @@ docker-compose up -d
 popd
 }
 
-function deploy_cc() {
+function run_cc() {
 
 readonly CC_VERSION="$1"
 
@@ -80,7 +82,7 @@ run_orderer
 
 run_peer
 
-deploy_cc 0.8.8
+run_cc 0.8.8
 
 popd
 
