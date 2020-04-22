@@ -2,17 +2,17 @@
 [[ -n $DEBUG ]] && set -x
 set -Eeuo pipefail
 
-readonly BASE=$(dirname $(readlink -f $0))
+readonly BASE=$(dirname "$(readlink -f "$0")")
 
 . "$BASE/lib.sh"
 
 echo_running
 
 if [[ -r $PWD/.env ]]; then
-   echo "Setting from PWD/.env ... "
+   echo "Setting from $PWD/.env ... "
    source "$PWD/.env"
 elif [[ -r $BASE/.env ]]; then
-   echo "Setting from BASE/.env ... "
+   echo "Setting from $BASE/.env ... "
    source "$BASE/.env"
 else
    echo "WARN: Running without .env ... "
@@ -41,7 +41,7 @@ while getopts "h?c:u:" opt; do
       esac
 done
 
-if ! [[ $BLOCK == *[[:digit:]]* ]] && ! [[ $BLOCK == "config" ]]; then
+if ! [[ $BLOCK == *[[:digit:]]* ]] && ! [[ $BLOCK == config ]]; then
    echo "ERROR: p1 [$BLOCK] invalid"
    usage
    exit 1
@@ -61,23 +61,19 @@ ORDERER_PARAMETER=""
 [[ -v ORDERER_NAME && ! -z $ORDERER_NAME ]] && readonly ORDERER_PARAMETER="${ORDERER_NAME}:${ORDERER_PORT:-7050}"
 echo "ORDERER_PARAMETER [$ORDERER_PARAMETER]"
 
-case $ENVIRONMENT in
-dev )  readonly CLI="peer0_afip_cli" ;;
-prod | homo )
-       readonly CLI="${NODE_NAME}.cli" ;;
-testnet )
-       readonly CLI="${PEER_NAME}.${BLOCKCHAIN_NETWORK_NAME}.${ENVIRONMENT}.${ORG_NAME}.${ORGS_NETWORK_DOMAIN_NAME}.cli" ;;
-* ) echo_red "ERROR: unknow [$ENVIRONMENT] - expetected [dev | prod | homo | testnet]"
-    exit 1
-esac
-echo "CLI [$CLI]"
+readonly RUNNING_CLIS=$(docker ps --format \{\{.Names\}\} --filter status=running | grep -E '^peer0.+(\.|_)cli$')
 
-readonly CLI_IS_RUNNING=$( docker ps -q --filter name="$CLI" --filter status=running )
+CLI=""
+for CLI in $RUNNING_CLIS; do
+   [[ $CLI =~ ^.+afip.+$ ]] && break
+done
 
-if [[ -z $CLI_IS_RUNNING ]]; then
-   echo "ERROR: container [$CLI] is not running"
+if [[ -z $CLI ]]; then
+   echo "ERROR: no cli container running"
    exit 1
 fi
+
+echo "CLI [$CLI]"
 
 if test -f "$OUTPUT"; then
    echo "removing file [$OUTPUT] ..."
