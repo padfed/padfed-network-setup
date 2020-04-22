@@ -123,6 +123,14 @@ function check_org_value() {
         done
         l_value=$(configtxgen -configPath "$string_file_or_dir" -printOrg "$MSPID")
    else
+        # org_value is not a file or a msp-dir, so must be a json-string
+        echo "checking org_value arg is a json-string with values..."
+        local argtype
+              argtype=$(echo "$string_file_or_dir" | jq type ) || true
+        if [[ -z $argtype ]]; then
+           echo_red "ERROR: task [$TASK] -k [$KEY] -v [config] must be a msp-dir, a json-file or a json-string"
+           exit 1
+        fi
         l_value="$string_file_or_dir"
    fi
 
@@ -142,7 +150,7 @@ function check_org_value() {
    l_found=$( echo "$l_value" | jq -r "$l_jpath" )
    l_want="admin"
    if [[ $l_want != "$l_found" ]]; then
-      echo_red "ERROR: $l_name: org config json whitout admin_ou_identifier"
+      echo_red "ERROR: org config json whitout admin_ou_identifier"
       echo_red "want [$l_want] - found [$l_found]"
       exit 1
    fi
@@ -150,7 +158,7 @@ function check_org_value() {
    l_jpath=".values.MSP.value.config.name"
    l_found=$( echo "$l_value" | jq -r "$l_jpath" )
    if [[ $MSPID != "$l_found" ]]; then
-      echo_red "ERROR: $l_name org config json whith name [$l_found], want [$MSPID]"
+      echo_red "ERROR: org config json whith name [$l_found], want [$MSPID]"
       exit 1
    fi
 
