@@ -5,30 +5,30 @@
 .directory
 network-setup.iml
 
-*.tar.xz
-*.md5
+**/*.tar.xz
+**/*.md5
 
-# Fabric binaries 
-configtxgen
-configtxlator
-cryptogen
-discover
-fabric-ca-client
-idemixgen
-orderer
-peer
+# Fabric binaries
+**/configtxgen
+**/configtxlator
+**/cryptogen
+**/discover
+**/fabric-ca-client
+**/idemixgen
+**/orderer
+**/peer
 
-fabric-storage/
-fabric-instance/
-cas-instances*/
-crypto-stage*/
-tmp/
-target/
-*-configtx-msp-dir/
-*-crypto-requests-crts/
-*-crypto-requests/
-*-crypto-admin/
-*-backup/
+**/fabric-storage/**
+**/fabric-instance/**
+**/cas-instances*/**
+**/crypto-stage*/**
+**/tmp/**
+**/target/**
+**/*-configtx-msp-dir/**
+**/*-crypto-requests-crts/**
+**/*-crypto-requests/**
+**/*-crypto-admin/**
+**/*-backup/**
 
 # tlsca de la tesnet v1
 # queda exceptuado porque es mantenido a mano
