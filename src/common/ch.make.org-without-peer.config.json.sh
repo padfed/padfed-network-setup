@@ -119,7 +119,7 @@ function main() {
         value="$INTERMEDIATE_CERT"
     fi
     onelineb64=$(base64 -w 0 "$value")
-    replace_org_config_json ".values.MSP.value.config.organizational_unit_identifiers[0].certificate=[\"$onelineb64\"]"
+    replace_org_config_json ".values.MSP.value.config.organizational_unit_identifiers[0].certificate=\"$onelineb64\""
 
     echo "$ORG_CONFIG_JSON" | jq .
 
